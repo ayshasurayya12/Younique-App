@@ -1,0 +1,1197 @@
+{
+  "products": [
+    {
+      "title": "Foxtale Ceramide Supercream Moisturizer",
+      "description": "Ceramide-based moisturizer that repairs damaged skin barrier, hydrates deeply and improves elasticity.",
+      "price": 750,
+      "category": "Moisturizer",
+      "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+      "stock": 9,
+      "isFeatured": true,
+      "inStock": true,
+      "id": "1"
+    },
+    {
+      "id": "4",
+      "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+      "price": 449,
+      "category": "Serum",
+      "description": "Lightweight hydration serum with hyaluronic acid and niacinamide for smooth and plump skin.",
+      "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 7
+    },
+    {
+      "id": "5",
+      "title": "Deconstruct Brightening Serum 10% Niacinamide + 0.3% Alpha Arbutin",
+      "price": 499,
+      "category": "Serum",
+      "description": "Fades dark spots, acne marks, and uneven tone with a powerful brightening formula.",
+      "image": "/src/assets/imgs/Deconstruct-brightening-serum.jpg",
+      "isFeatured": true,
+      "inStock": true,
+      "stock": 10
+    },
+    {
+      "id": "6",
+      "title": "Deconstruct Moisturizer with Ceramides & Bisabolol",
+      "price": 399,
+      "category": "Moisturizer",
+      "description": "Calming and barrier-repairing moisturizer that reduces skin sensitivity and dryness.",
+      "image": "/src/assets/imgs/Deconstruct-Moisturizer.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 4
+    },
+    {
+      "id": "7",
+      "title": "Dot & Key Vitamin C + E Super Bright Face Serum",
+      "price": 745,
+      "category": "Serum",
+      "description": "Glow-boosting serum that targets hyperpigmentation, dullness and uneven skin tone.",
+      "image": "/src/assets/imgs/Dot&Key-brightening-Serum.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "8",
+      "title": "Dot & Key Watermelon Cooling Sunscreen SPF 50",
+      "price": 495,
+      "category": "Sunscreen",
+      "description": "Lightweight gel sunscreen that hydrates and protects skin without leaving white cast.",
+      "image": "/src/assets/imgs/Watermelon-sunscreen.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 12
+    },
+    {
+      "id": "9",
+      "title": "Dot & Key Retinol + Ceramide Night Cream",
+      "price": 799,
+      "category": "Night Cream",
+      "description": "Anti-aging night cream that reduces wrinkles and improves firmness overnight.",
+      "image": "/src/assets/imgs/Retinol-night-cream.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "10",
+      "title": "Plum Green Tea Oil-Free Moisturizer",
+      "price": 399,
+      "category": "Moisturizer",
+      "description": "Non-comedogenic oil-free moisturizer designed for acne-prone and oily skin.",
+      "image": "/src/assets/imgs/Plum-moisturizer.webp",
+      "isFeatured": true,
+      "inStock": true,
+      "stock": 14
+    },
+    {
+      "id": "11",
+      "title": "Plum 2% Salicylic Acid Face Wash",
+      "price": 325,
+      "category": "Cleanser",
+      "description": "Deep pore-cleansing face wash that targets acne, blackheads and excess oil.",
+      "image": "/src/assets/imgs/Plum-facewash.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "12",
+      "title": "Plum Niacinamide 10% Booster Serum",
+      "price": 550,
+      "category": "Serum",
+      "description": "Niacinamide serum for improving texture and brightening complexion.",
+      "image": "/src/assets/imgs/Plum-serum.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "13",
+      "title": "Dermaco 2% Salicylic Acid Serum",
+      "price": 649,
+      "category": "Serum",
+      "description": "Exfoliating serum that treats active acne, blackheads and controls excess oil.",
+      "image": "/src/assets/imgs/Dermaco-serum.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "14",
+      "title": "Dermaco 10% Vitamin C Face Serum",
+      "price": 599,
+      "category": "Serum",
+      "description": "Antioxidant serum that brightens and reduces dark spots and pigmentation.",
+      "image": "/src/assets/imgs/Dermaco-vitc-serum.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "15",
+      "title": "Dermaco Hyaluronic Sunscreen SPF 50",
+      "price": 499,
+      "category": "Sunscreen",
+      "description": "Hydrating sunscreen with zero-white-cast formula for strong sun protection.",
+      "image": "/src/assets/imgs/Dermaco-sunscreen.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "16",
+      "title": "DermDoc Anti Acne Face Serum with Salicylic Acid",
+      "price": 249,
+      "category": "Serum",
+      "description": "Affordable beginner-friendly serum that reduces inflammation and clogged pores.",
+      "image": "/src/assets/imgs/Dermdoc-salicilic-serum.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "17",
+      "title": "DermDoc Hydrating Gel Moisturizer with Hyaluronic Acid",
+      "price": 299,
+      "category": "Moisturizer",
+      "description": "Oil-free gel moisturizer that provides long-lasting hydration.",
+      "image": "/src/assets/imgs/Dermdoc-moisturizer.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "18",
+      "title": "Clinique Dramatically Different Moisturizing Gel",
+      "price": 2450,
+      "category": "Moisturizer",
+      "description": "Lightweight gel moisturizer for oily skin that strengthens the barrier.",
+      "image": "/src/assets/imgs/Clinique-moisturizer.avif",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "19",
+      "title": "Clinique Moisture Surge 100H Hydrator",
+      "price": 2950,
+      "category": "Gel Cream",
+      "description": "Deep hydration gel cream that locks moisture for 100 hours.",
+      "image": "/src/assets/imgs/clinique-surge-moisturizer.avif",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "20",
+      "title": "Clinique Take The Day Off Cleansing Balm",
+      "price": 2550,
+      "category": "Cleanser",
+      "description": "Silky cleansing balm that melts stubborn makeup and sunscreen.",
+      "image": "/src/assets/imgs/clinique-cleansing-balm.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "21",
+      "title": "Beauty of Joseon Relief Sun: Rice + Probiotics SPF50",
+      "price": 1099,
+      "category": "Sunscreen",
+      "description": "Non-greasy lightweight sunscreen enriched with rice extract and probiotics.",
+      "image": "/src/assets/imgs/BOJ-sunscreen.jpg",
+      "isFeatured": true,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "22",
+      "title": "Beauty of Joseon Glow Serum Propolis + Niacinamide",
+      "price": 1290,
+      "category": "Serum",
+      "description": "Brightening and calming serum that reduces acne scars and improves glow.",
+      "image": "/src/assets/imgs/BOJ-serum.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "23",
+      "title": "Beauty of Joseon Ginseng Essence Water",
+      "price": 1399,
+      "category": "Essence",
+      "description": "Anti-aging ginseng essence that improves firmness and moisturizes skin.",
+      "image": "/src/assets/imgs/BOJ-essence-water.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "24",
+      "title": "COSRX Advanced Snail 96 Mucin Power Essence",
+      "price": 1599,
+      "category": "Essence",
+      "description": "Hydrating and repairing essence with 96% snail mucin for glowing skin.",
+      "image": "/src/assets/imgs/Snail-mucin.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "25",
+      "title": "COSRX Low pH Good Morning Gel Cleanser",
+      "price": 529,
+      "category": "Cleanser",
+      "description": "Daily gentle cleanser that maintains healthy pH balance and controls oil.",
+      "image": "/src/assets/imgs/cosrx-cleanser.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "26",
+      "title": "COSRX Oil-Free Ultra Moisturizing Lotion",
+      "price": 1150,
+      "category": "Moisturizer",
+      "description": "Birch sap-infused moisturizer providing lightweight and soothing hydration.",
+      "image": "/src/assets/imgs/cosrx-moisturizer.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "27",
+      "title": "Estée Lauder Advanced Night Repair Synchronized Multi-Recovery Complex",
+      "price": 3850,
+      "category": "Serum",
+      "description": "Luxury anti-aging serum that reduces fine lines, improves smoothness and radiance.",
+      "image": "/src/assets/imgs/Launder-night-repair.jpg",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "28",
+      "title": "Estée Lauder Double Wear Sheer Matte Foundation",
+      "price": 3200,
+      "category": "Foundation",
+      "description": "Long-wearing matte foundation that controls shine and lasts all day.",
+      "image": "/src/assets/imgs/Launder-foundation.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "29",
+      "title": "Estée Lauder Resilience Multi-Effect Night Cream",
+      "price": 4200,
+      "category": "Night Cream",
+      "description": "Anti-aging firming night cream that nourishes and boosts elasticity.",
+      "image": "/src/assets/imgs/Launder-night-cream.avif",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "30",
+      "title": "Clinique All About Eyes Lightweight Eye Cream",
+      "price": 1950,
+      "category": "Eye Cream",
+      "description": "Lightweight eye cream that reduces puffiness and dark circles visibly.",
+      "image": "/src/assets/imgs/Clinique-eye-cream.webp",
+      "isFeatured": false,
+      "inStock": true,
+      "stock": 15
+    },
+    {
+      "id": "7f53",
+      "title": "Cerave Moisturizing Lotion",
+      "description": "Gently moisturizes and soothens skin.",
+      "price": 366,
+      "category": "Moisturizer",
+      "image": "/src/assets/imgs/Cerave-moisturizer.webp",
+      "stock": 15,
+      "isFeatured": false,
+      "inStock": true
+    }
+  ],
+  "users": [
+    {
+      "id": "2642",
+      "fullName": "dennis",
+      "email": "den@123.com",
+      "phone": "12345",
+      "username": "den",
+      "password": "123456",
+      "role": "user",
+      "createdAt": "2025-12-04T10:49:38.843Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1765606391518",
+          "date": "2025-12-13T06:13:11.531Z",
+          "status": "Delivered",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "2",
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 2,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            },
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 3,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "dennis",
+            "email": "den@123.com",
+            "phone": "12345",
+            "pincode": "675555"
+          },
+          "totals": {
+            "subtotal": 2045,
+            "shipping": 0,
+            "total": 2045
+          }
+        },
+        {
+          "id": "ORD-1765609360993",
+          "date": "2025-12-13T07:02:40.999Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "5",
+              "title": "Deconstruct Brightening Serum 10% Niacinamide + 0.3% Alpha Arbutin",
+              "price": 499,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-brightening-serum.jpg",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "dennis",
+            "email": "den@123.com",
+            "phone": "1234567891",
+            "pincode": "123456"
+          },
+          "totals": {
+            "subtotal": 499,
+            "shipping": 0,
+            "total": 499
+          }
+        }
+      ]
+    },
+    {
+      "id": "12a1",
+      "fullName": "aysha",
+      "email": "aysha@gmail.com",
+      "phone": "1231234567",
+      "username": "aysha123",
+      "password": "111111",
+      "role": "user",
+      "createdAt": "2025-12-04T12:03:31.407Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1764849870742-50",
+          "date": "2025-12-04T12:04:30.742Z",
+          "status": "Delivered",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": 2,
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            },
+            {
+              "productId": 7,
+              "title": "Dot & Key Vitamin C + E Super Bright Face Serum",
+              "price": 745,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Dot&Key-brightening-Serum.webp",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "aysha",
+            "email": "aysha@gmail.com",
+            "phone": "1231234567",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "1094.00",
+            "shipping": "0.00",
+            "tax": "87.52",
+            "total": "1181.52"
+          }
+        },
+        {
+          "id": "ORD-1764849904744-374",
+          "date": "2025-12-04T12:05:04.744Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": 2,
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "aysha",
+            "email": "aysha@gmail.com",
+            "phone": "1231234567",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "349.00",
+            "shipping": "0.00",
+            "tax": "27.92",
+            "total": "376.92"
+          }
+        }
+      ]
+    },
+    {
+      "id": "7bc9",
+      "fullName": "Hari",
+      "email": "hari123@gmail.com",
+      "phone": null,
+      "username": "Hari",
+      "password": "hari123",
+      "role": "user",
+      "createdAt": "2025-12-05T06:33:01.303Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1764916627508-409",
+          "date": "2025-12-05T06:37:07.508Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": 15,
+              "title": "Dermaco Hyaluronic Sunscreen SPF 50",
+              "price": 499,
+              "quantity": 2,
+              "image": "/src/assets/imgs/Dermaco-sunscreen.jpg",
+              "category": "Sunscreen"
+            },
+            {
+              "productId": 4,
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Hari",
+            "email": "hari123@gmail.com",
+            "phone": "1234567890",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "1447.00",
+            "shipping": "0.00",
+            "tax": "115.76",
+            "total": "1562.76"
+          }
+        },
+        {
+          "id": "ORD-1764921770816-946",
+          "date": "2025-12-05T08:02:50.816Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "2",
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Hari",
+            "email": "hari123@gmail.com",
+            "phone": "1234567890",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "349.00",
+            "shipping": "0.00",
+            "tax": "27.92",
+            "total": "376.92"
+          }
+        }
+      ]
+    },
+    {
+      "id": "a556",
+      "fullName": "Aysha",
+      "email": "ishaaaaashh@gmail.com",
+      "phone": null,
+      "username": "Aysha",
+      "password": "aysu1234",
+      "role": "user",
+      "createdAt": "2025-12-05T10:51:22.974Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1765003137338-908",
+          "date": "2025-12-06T06:38:57.338Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "1",
+              "title": "Foxtale Ceramide Supercream Moisturizer",
+              "price": 549,
+              "quantity": 4,
+              "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+              "category": "Moisturizer"
+            },
+            {
+              "productId": "3",
+              "title": "Foxtale Vitamin C Serum For Brighter Complexion",
+              "price": 699,
+              "quantity": 4,
+              "image": "/src/assets/imgs/Foxtale-serum.jpg",
+              "category": "Serum"
+            },
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "ishaaaaashh@gmail.com",
+            "phone": "1234567890",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "5441.00",
+            "shipping": "0.00",
+            "total": "5441.00"
+          }
+        },
+        {
+          "id": "ORD-1765006356206-916",
+          "date": "2025-12-06T07:32:36.206Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "1",
+              "title": "Foxtale Ceramide Supercream Moisturizer",
+              "price": 549,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+              "category": "Moisturizer"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "ishaaaaashh@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "549.00",
+            "shipping": "0.00",
+            "total": "549.00"
+          }
+        },
+        {
+          "id": "ORD-1765013123609-546",
+          "date": "2025-12-06T09:25:23.609Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "3",
+              "title": "Foxtale Vitamin C Serum For Brighter Complexion",
+              "price": 699,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-serum.jpg",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "ishaaaaashh@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "699.00",
+            "shipping": "0.00",
+            "total": "699.00"
+          }
+        },
+        {
+          "id": "ORD-1765273940852-729",
+          "date": "2025-12-09T09:52:20.852Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "3",
+              "title": "Foxtale Vitamin C Serum For Brighter Complexion",
+              "price": 699,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-serum.jpg",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "ishaaaaashh@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "699.00",
+            "shipping": "0.00",
+            "total": "699.00"
+          }
+        },
+        {
+          "id": "ORD-1765301918385-665",
+          "date": "2025-12-09T17:38:38.385Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "11",
+              "title": "Plum 2% Salicylic Acid Face Wash",
+              "price": 325,
+              "quantity": 4,
+              "image": "/src/assets/imgs/Plum-facewash.webp",
+              "category": "Cleanser"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "ishaaaaashh@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "1300.00",
+            "shipping": "0.00",
+            "total": "1300.00"
+          }
+        }
+      ]
+    },
+    {
+      "id": "8864",
+      "fullName": "khadeejath hanna ",
+      "email": "khadeejathanna@gmail.com",
+      "phone": "7736225029",
+      "username": "kadeejahanna",
+      "password": "hanna@123",
+      "role": "user",
+      "createdAt": "2025-12-05T17:50:53.234Z",
+      "isBlocked": false,
+      "cart": [
+        {
+          "productId": "10",
+          "title": "Plum Green Tea Oil-Free Moisturizer",
+          "price": 399,
+          "quantity": 5,
+          "image": "/src/assets/imgs/Plum-moisturizer.webp",
+          "category": "Moisturizer"
+        },
+        {
+          "productId": "3",
+          "title": "Foxtale Vitamin C Serum For Brighter Complexion",
+          "price": 699,
+          "quantity": 3,
+          "image": "/src/assets/imgs/Foxtale-serum.jpg",
+          "category": "Serum"
+        }
+      ],
+      "orders": [
+        {
+          "id": "ORD-1764957108642-693",
+          "date": "2025-12-05T17:51:48.642Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "9",
+              "title": "Dot & Key Retinol + Ceramide Night Cream",
+              "price": 799,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Retinol-night-cream.webp",
+              "category": "Night Cream"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "khadeejath hanna ",
+            "email": "khadeejathanna@gmail.com",
+            "phone": "7736225029",
+            "pincode": "671317"
+          },
+          "totals": {
+            "subtotal": "799.00",
+            "shipping": "0.00",
+            "total": "799.00"
+          }
+        }
+      ]
+    },
+    {
+      "id": "3918",
+      "fullName": "Aysha Surayya",
+      "email": "aysu@123.com",
+      "phone": null,
+      "username": "aysu",
+      "password": "aysu@1234",
+      "role": "user",
+      "createdAt": "2025-12-10T05:01:06.022Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": []
+    },
+    {
+      "id": "1842",
+      "fullName": "abhinav",
+      "email": "abhinav@gmail.com",
+      "phone": null,
+      "username": "abhinav",
+      "password": "abhinav",
+      "role": "user",
+      "createdAt": "2025-12-10T08:33:33.500Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": []
+    },
+    {
+      "id": "1fd5",
+      "fullName": "Aysha Surayya",
+      "email": "aysha123@gmail.com",
+      "phone": null,
+      "username": "admin",
+      "password": "admin1234",
+      "role": "admin",
+      "createdAt": "2025-12-10T08:48:44.339Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1765511904326-479",
+          "date": "2025-12-12T03:58:24.326Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "449.00",
+            "shipping": "0.00",
+            "total": "449.00"
+          }
+        },
+        {
+          "id": "ORD-1765516405694-802",
+          "date": "2025-12-12T05:13:25.694Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "2",
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "673528"
+          },
+          "totals": {
+            "subtotal": "349.00",
+            "shipping": "0.00",
+            "total": "349.00"
+          }
+        },
+        {
+          "id": "ORD-1765521963235-948",
+          "date": "2025-12-12T06:46:03.235Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "3434343434",
+            "pincode": "343444"
+          },
+          "totals": {
+            "subtotal": "449.00",
+            "shipping": "0.00",
+            "total": "449.00"
+          }
+        },
+        {
+          "id": "ORD-1765524939083",
+          "date": "2025-12-12T07:35:39.083Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 4,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "123446"
+          },
+          "totals": {
+            "subtotal": "1796.00",
+            "shipping": "0.00",
+            "total": "1796.00"
+          }
+        },
+        {
+          "id": "ORD-1765525747950",
+          "date": "2025-12-12T07:49:07.950Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "1",
+              "title": "Foxtale Ceramide Supercream Moisturizer",
+              "price": 748.97,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+              "category": "Moisturizer"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "123446"
+          },
+          "totals": {
+            "subtotal": "748.97",
+            "shipping": "0.00",
+            "total": "748.97"
+          }
+        },
+        {
+          "id": "ORD-1765525865720",
+          "date": "2025-12-12T07:51:05.720Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "1",
+              "title": "Foxtale Ceramide Supercream Moisturizer",
+              "price": 748.97,
+              "quantity": 4,
+              "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+              "category": "Moisturizer"
+            },
+            {
+              "productId": "5",
+              "title": "Deconstruct Brightening Serum 10% Niacinamide + 0.3% Alpha Arbutin",
+              "price": 499,
+              "quantity": 3,
+              "image": "/src/assets/imgs/Deconstruct-brightening-serum.jpg",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "123446"
+          },
+          "totals": {
+            "subtotal": "4492.88",
+            "shipping": "0.00",
+            "total": "4492.88"
+          }
+        },
+        {
+          "id": "ORD-1765528783177",
+          "date": "2025-12-12T08:39:43.177Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "4",
+              "title": "Deconstruct Hydrating Serum 2% Hyaluronic Acid",
+              "price": 449,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Deconstruct-hydrating-serum.avif",
+              "category": "Serum"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha Surayya",
+            "email": "aysha123@gmail.com",
+            "phone": "7736225029",
+            "pincode": "123446"
+          },
+          "totals": {
+            "subtotal": "449.00",
+            "shipping": "0.00",
+            "total": "449.00"
+          }
+        },
+        {
+          "id": "ORD-1765529048476",
+          "date": "2025-12-12T08:44:08.476Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "2",
+              "title": "Foxtale Anti-Acne Cleanser with Salicylic Acid",
+              "price": 349,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-cleanser.jpeg",
+              "category": "Cleanser"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "aysha123@gmail.com",
+            "phone": "8075290039",
+            "pincode": "671317"
+          },
+          "totals": {
+            "subtotal": "349.00",
+            "shipping": "0.00",
+            "total": "349.00"
+          }
+        },
+        {
+          "id": "ORD-1765701524369",
+          "date": "2025-12-14T08:38:44.378Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "8",
+              "title": "Dot & Key Watermelon Cooling Sunscreen SPF 50",
+              "price": 495,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Watermelon-sunscreen.webp",
+              "category": "Sunscreen"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "Aysha",
+            "email": "aysha123@gmail.com",
+            "phone": "8075290039",
+            "pincode": "671317"
+          },
+          "totals": {
+            "subtotal": 495,
+            "shipping": 0,
+            "total": 495
+          }
+        }
+      ],
+      "addresses": [
+        {
+          "fullName": "Aysha",
+          "phone": "8075290039",
+          "pincode": "671317"
+        },
+        {
+          "fullName": "aysha surayya",
+          "phone": "7902236684",
+          "pincode": "671319"
+        }
+      ]
+    },
+    {
+      "id": "1b8a",
+      "fullName": "abhinav",
+      "email": "abhi123@gmail.com",
+      "phone": null,
+      "username": "abhi",
+      "password": "abhi1234",
+      "role": "user",
+      "createdAt": "2025-12-10T09:03:37.606Z",
+      "isBlocked": false,
+      "cart": [],
+      "orders": []
+    },
+    {
+      "id": "494a",
+      "fullName": "qais",
+      "email": "qais123@gmail.com",
+      "phone": null,
+      "username": "qais",
+      "password": "qais1234",
+      "role": "user",
+      "createdAt": "2025-12-12T09:33:59.935Z",
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1765532772607",
+          "date": "2025-12-12T09:46:12.615Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "1",
+              "title": "Foxtale Ceramide Supercream Moisturizer",
+              "price": 748.97,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Foxtale-moisturizer.webp",
+              "category": "Moisturizer"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "qais",
+            "email": "qais123@gmail.com",
+            "phone": "6799876453",
+            "pincode": "671341"
+          },
+          "totals": {
+            "subtotal": 748.97,
+            "shipping": 0,
+            "total": 748.97
+          }
+        }
+      ],
+      "addresses": [
+        {
+          "fullName": "qais",
+          "phone": "6799876453",
+          "pincode": "671341"
+        }
+      ]
+    },
+    {
+      "id": "c5c1",
+      "fullName": "raniya",
+      "email": "raniya@123.com",
+      "phone": null,
+      "username": "raniya",
+      "password": "raniya",
+      "role": "user",
+      "createdAt": "2025-12-13T10:11:29.240Z",
+      "cart": [],
+      "orders": [
+        {
+          "id": "ORD-1765621390086",
+          "date": "2025-12-13T10:23:10.098Z",
+          "status": "Processing",
+          "paymentMethod": "Cash on Delivery",
+          "items": [
+            {
+              "productId": "10",
+              "title": "Plum Green Tea Oil-Free Moisturizer",
+              "price": 399,
+              "quantity": 1,
+              "image": "/src/assets/imgs/Plum-moisturizer.webp",
+              "category": "Moisturizer"
+            }
+          ],
+          "shippingInfo": {
+            "fullName": "raniya",
+            "email": "raniya@123.com",
+            "phone": "8075290039",
+            "pincode": "671319"
+          },
+          "totals": {
+            "subtotal": 399,
+            "shipping": 0,
+            "total": 399
+          }
+        }
+      ],
+      "savedAddresses": []
+    },
+    {
+      "id": "9b19",
+      "fullName": "Marzook",
+      "email": "marzook@gmail.com",
+      "phone": null,
+      "username": "marzu",
+      "password": "marzu123",
+      "role": "user",
+      "createdAt": "2025-12-14T08:39:35.903Z",
+      "cart": [],
+      "orders": [],
+      "savedAddresses": []
+    }
+  ]
+}

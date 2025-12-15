@@ -1,0 +1,248 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { CheckCircle, Package, Truck, Home, ShoppingBag } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const OrderConfirmation = () => {
+    const { orderId } = useParams();
+    const navigate = useNavigate();
+    
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
+
+    useEffect(() => {
+        const fetchOrder = async () => {
+            try {
+                
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    navigate('/login');
+                    return;
+                }
+                const user = JSON.parse(userData);
+                setCurrentUser(user);
+                
+                
+                const response = await fetch(`http://localhost:3000/users/${user.id}`);
+                if (!response.ok) {
+                    throw new Error('User not found');
+                }
+                
+                const userDataFromServer = await response.json();
+                
+                
+                const foundOrder = userDataFromServer.orders?.find(order => order.id === orderId);
+                
+                if (!foundOrder) {
+                    toast.error('Order not found');
+                    navigate('/');
+                    return;
+                }
+                
+                setOrder(foundOrder);
+            } catch (error) {
+                console.error('Error fetching order:', error);
+                toast.error('Failed to load order details');
+                navigate('/');
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchOrder();
+    }, [orderId, navigate]);
+
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-20 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B37869] mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading order details...</p>
+            </div>
+        );
+    }
+
+    if (!order) {
+        return (
+            <div className="container mx-auto px-4 py-20 text-center">
+                <Package size={64} className="mx-auto text-gray-400 mb-4" />
+                <h1 className="text-3xl font-bold mb-3">Order Not Found</h1>
+                <p className="text-gray-600 mb-6">The order you're looking for doesn't exist.</p>
+                <Link
+                    to="/"
+                    className="text-lg bg-[#C58B7A] text-white px-6 py-3 rounded-full hover:bg-[#B37869] transition-colors"
+                >
+                    Return to Home
+                </Link>
+            </div>
+        );
+    }
+
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <div className="max-w-4xl mx-auto">
+                
+                <div className="text-center mb-10">
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-green-100 p-4 rounded-full">
+                            <CheckCircle size={48} className="text-green-600" />
+                        </div>
+                    </div>
+                    <h1 className="text-4xl font-bold text-gray-800 mb-3">Order Confirmed!</h1>
+                    <p className="text-gray-600 text-lg">
+                        Thank you for your purchase, {order.shippingInfo.fullName}!
+                    </p>
+                    <p className="text-gray-600">
+                        A confirmation email has been sent to {order.shippingInfo.email}
+                    </p>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                    <div className="space-y-6">
+                        
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4 border-b pb-2">Order Details</h2>
+                            
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Order ID:</span>
+                                    <span className="font-semibold">{order.id}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Order Date:</span>
+                                    <span className="font-semibold">
+                                        {new Date(order.date).toLocaleDateString('en-US', {
+                                            weekday: 'long',
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Status:</span>
+                                    <span className={`font-semibold px-3 py-1 rounded-full text-sm ${
+                                        order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                                        order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
+                                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                        'bg-gray-100 text-gray-800'
+                                    }`}>
+                                        {order.status}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Payment Method:</span>
+                                    <span className="font-semibold text-[#B37869]">{order.paymentMethod || 'Cash on Delivery'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Truck size={24} className="text-[#B37869]" />
+                                <h2 className="text-2xl font-bold">Shipping Information</h2>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <p className="font-semibold">{order.shippingInfo.fullName}</p>
+                                <p>📞 {order.shippingInfo.phone}</p>
+                                <p>📧 {order.shippingInfo.email}</p>
+                                <p className="pt-2">📍 Pincode: {order.shippingInfo.pincode}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                
+                    <div className="space-y-6">
+                    
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4 border-b pb-2">Order Items</h2>
+                            
+                            <div className="space-y-4">
+                                {order.items.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-4 border-b pb-4 last:border-0">
+                                        <img 
+                                            src={item.image} 
+                                            alt={item.title}
+                                            className="w-16 h-16 object-cover rounded"
+                                        />
+                                        <div className="flex-1">
+                                            <p className="font-semibold">{item.title}</p>
+                                            <p className="text-sm text-gray-600">{item.category}</p>
+                                            <p className="text-sm text-gray-600">
+                                                Quantity: {item.quantity} × ₹{item.price.toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <p className="font-bold">
+                                            ₹{(item.price * item.quantity).toFixed(2)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4 border-b pb-2">Order Summary</h2>
+                            
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span>Subtotal:</span>
+                                    <span>₹{order.totals.subtotal}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Shipping:</span>
+                                    <span>₹{order.totals.shipping}</span>
+                                </div>
+                                <div className="border-t pt-3">
+                                    <div className="flex justify-between text-xl font-bold">
+                                        <span>Total:</span>
+                                        <span>₹{order.totals.total}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                
+                        <div className="flex flex-col gap-3">
+                            <Link
+                                to="/allproducts"
+                                className="w-full bg-[#B37869] text-white py-3 rounded-full text-lg font-semibold hover:bg-[#C58B7A] transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ShoppingBag size={20} />
+                                Continue Shopping
+                            </Link>
+                            
+                            <Link
+                                to="/"
+                                className="w-full border border-[#B37869] text-[#B37869] py-3 rounded-full text-lg font-semibold hover:bg-[#F2E8E6] transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Home size={20} />
+                                Back to Home
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+                
+            
+                <div className="mt-8 p-6 bg-blue-50 rounded-lg">
+                    <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                        <Truck size={24} />
+                        Estimated Delivery
+                    </h3>
+                    <p className="text-gray-700">
+                        Your order will be delivered within <span className="font-semibold">3-5 business days</span>. 
+                        You will receive tracking information via email once your order ships.
+                    </p>
+                    <p className="text-gray-700 mt-2 font-semibold">
+                        💰 Please keep <span className="text-[#B37869]">₹{order.totals.total}</span> in cash ready for delivery.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default OrderConfirmation;
