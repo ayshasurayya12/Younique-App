@@ -4,6 +4,7 @@ import Footer from '../Components/Footer';
 import { Link } from 'react-router-dom';
 import { fetchAllProducts } from '../productContents'; 
 import logo from '../assets/imgs/logo.png';
+import heroo from '../assets/imgs/herosection.png';
 
 const Home = () => { 
     const [allProducts, setAllProducts] = useState([]);
@@ -60,7 +61,7 @@ const Home = () => {
                 </div>
                 <div className="flex justify-center">
                     <img
-                        src="./herooo.png"
+                        src={heroo}
                         alt="Hero"
                         className="w-full max-w-[550px] object-contain rounded"
                     />

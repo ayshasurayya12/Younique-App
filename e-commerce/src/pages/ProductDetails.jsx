@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchAllProducts } from '../productContents';
 import toast from 'react-hot-toast';
+import client from '../api/client';
+import { getImageSrc } from '../utils/imageHelper';
 
-function ProductDetails({ handleAddToCart, refreshCartCount }) {
+function ProductDetails({ refreshCartCount }) {
     const navigate = useNavigate();
-    const [allProducts, setAllProducts] = useState([]);
+
+    const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
     const [addingToCart, setAddingToCart] = useState(false);
@@ -14,71 +16,33 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
     const { id } = useParams();
 
     useEffect(() => {
-        const loadProducts = async () => {
-            const data = await fetchAllProducts();
-            setAllProducts(data);
-            setLoading(false);
+        const load = async () => {
+            try {
+                const res = await client.get(`/products/${id}/`);
+                setProduct(res.data);
+            } catch {
+                setProduct(null);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        const getUser = () => {
-            const userData = localStorage.getItem('user');
-            if (userData) setCurrentUser(JSON.parse(userData));
-        };
+        const userData = localStorage.getItem('user');
 
-        loadProducts();
-        getUser();
-    }, [id]);
-
-    const productId = parseInt(id);
-    const product = allProducts.find((p) => p.id == productId);
-
-    
-    const addToUserCartInBackend = async (product, userId) => {
-        const res = await fetch(`http://localhost:3000/users/${userId}`);
-        const user = await res.json();
-
-        const cart = user.cart || [];
-        const existingIndex = cart.findIndex(i => i.productId === product.id);
-
-        if (existingIndex >= 0) {
-    
-            if (cart[existingIndex].quantity + 1 > product.stock) {
-                toast.error("Only limited stock available!");
-                return false;
-            }
-            cart[existingIndex].quantity += 1;
-        } else {
-            if (product.stock < 1) {
-                toast.error("This product is out of stock!");
-                return false;
-            }
-            cart.push({
-                productId: product.id,
-                title: product.title,
-                price: product.price,
-                quantity: 1,
-                image: product.image,
-                category: product.category
-            });
+        if (userData) {
+            setCurrentUser(JSON.parse(userData));
         }
 
-        await fetch(`http://localhost:3000/users/${userId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cart })
-        });
+        load();
+    }, [id]);
 
-        return true;
-    };
-
-    
-    const handleAddToCartClick = async (product) => {
+    const handleAddToCartClick = async () => {
         if (!currentUser) {
             toast.error("Please login to add items");
             return navigate("/login");
         }
 
-        if (currentUser.isBlocked) {
+        if (currentUser?.isBlocked) {
             toast.error("Your account is blocked.");
             return;
         }
@@ -91,28 +55,36 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
         setAddingToCart(true);
 
         try {
-            await addToUserCartInBackend(product, currentUser.id);
-            if (refreshCartCount) refreshCartCount();
+            await client.post('/cart/add/', {
+                product_id: product.id,
+                quantity: 1
+            });
+
+            refreshCartCount?.();
 
             toast.success("Added to cart!", {
-                iconTheme: { primary: "#B37869", secondary: "#FFFAEE" }
+                iconTheme: {
+                    primary: "#B37869",
+                    secondary: "#FFFAEE"
+                }
             });
 
         } catch (err) {
-            toast.error("Failed to add item");
+            toast.error(
+                err.response?.data?.error || "Failed to add item"
+            );
         } finally {
             setAddingToCart(false);
         }
     };
 
-   
     const handleBuyNow = () => {
         if (!currentUser) {
             toast.error("Please login first");
             return navigate("/login");
         }
 
-        if (currentUser.isBlocked) {
+        if (currentUser?.isBlocked) {
             toast.error("Your account is blocked.");
             return;
         }
@@ -124,32 +96,42 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
 
         setBuyingNow(true);
 
-        const tempOrder = {
-            id: `TEMP-${Date.now()}`,
-            product: {
-                productId: product.id,
-                title: product.title,
-                price: product.price,
-                quantity: 1,
-                image: product.image,
-                category: product.category
-            },
-            timestamp: new Date().toISOString()
-        };
+        localStorage.setItem(
+            "buyNowProduct",
+            JSON.stringify({
+                product: {
+                    productId: product.id,
+                    title: product.title,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.image,
+                    category: product.category?.name,
+                }
+            })
+        );
 
-        localStorage.setItem("buyNowProduct", JSON.stringify(tempOrder));
-
-        navigate("/checkout", { state: { isBuyNow: true, product: tempOrder } });
+        navigate("/checkout", {
+            state: {
+                isBuyNow: true
+            }
+        });
     };
 
-    
-    if (loading)
-        return <div className="container mx-auto py-8 text-center">Loading...</div>;
-
-    if (!product)
+    if (loading) {
         return (
             <div className="container mx-auto py-8 text-center">
-                <h1 className="text-2xl font-bold text-red-600">Product Not Found</h1>
+                Loading...
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="container mx-auto py-8 text-center">
+                <h1 className="text-2xl font-bold text-red-600">
+                    Product Not Found
+                </h1>
+
                 <button
                     onClick={() => navigate('/allproducts')}
                     className="mt-4 px-6 py-3 bg-gray-600 text-white rounded-xl"
@@ -158,21 +140,27 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
                 </button>
             </div>
         );
-
+    }
 
     const stock = product.stock;
     const isAvailable = stock > 0;
 
     const stockLabel = () => {
-        if (stock <= 0)
-            return <span className="text-red-600 font-bold">Out of Stock</span>;
+        if (stock <= 0) {
+            return (
+                <span className="text-red-600 font-bold">
+                    Out of Stock
+                </span>
+            );
+        }
 
-        if (stock > 0 && stock <= 5)
+        if (stock <= 5) {
             return (
                 <span className="text-yellow-600 font-bold">
                     Only {stock} left!
                 </span>
             );
+        }
 
         return (
             <span className="text-green-600 font-bold">
@@ -183,41 +171,45 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
 
     return (
         <div className="container mx-auto py-4 px-4">
+
             <div className="grid md:grid-cols-2 gap-8">
 
-                <img
-                    src={product.image}
-                    alt={product.title}
-                    className="rounded-lg shadow-lg"
-                />
+                <img src={getImageSrc(product.image)} alt={product.title} className="rounded-lg shadow-lg" />
 
                 <div className="space-y-4">
 
-                    <h1 className="text-4xl font-bold text-[#B37869]">{product.title}</h1>
+                    <h1 className="text-4xl font-bold text-[#B37869]">
+                        {product.title}
+                    </h1>
 
                     <p className="text-lg">
-                        Category: <b>{product.category}</b>
+                        Category:
+                        <b> {product.category?.name}</b>
                     </p>
 
                     <p className="text-3xl font-bold text-green-700">
                         ₹{product.price}
                     </p>
 
-                    <p className="text-gray-700">{product.description}</p>
+                    <p className="text-gray-700">
+                        {product.description}
+                    </p>
 
-        
                     <p className="text-lg font-semibold">
                         Status: {stockLabel()}
                     </p>
 
                     <div className="flex flex-col gap-4">
 
-                    
                         <button
-                            onClick={() => handleAddToCartClick(product)}
+                            onClick={handleAddToCartClick}
                             disabled={!isAvailable || addingToCart}
-                            className={`px-6 py-3 rounded-xl text-white font-semibold 
-                                ${isAvailable ? "bg-[#B37869] hover:bg-[#C58B7A]" : "bg-gray-400 cursor-not-allowed"}`}
+                            className={`px-6 py-3 rounded-xl text-white font-semibold
+                            ${
+                                isAvailable
+                                    ? "bg-[#B37869] hover:bg-[#C58B7A]"
+                                    : "bg-gray-400 cursor-not-allowed"
+                            }`}
                         >
                             {addingToCart
                                 ? "Adding..."
@@ -226,12 +218,15 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
                                 : "Out of Stock"}
                         </button>
 
-                
                         <button
                             onClick={handleBuyNow}
                             disabled={!isAvailable || buyingNow}
-                            className={`px-6 py-3 rounded-xl text-white font-semibold 
-                                ${isAvailable ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"}`}
+                            className={`px-6 py-3 rounded-xl text-white font-semibold
+                            ${
+                                isAvailable
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : "bg-gray-400 cursor-not-allowed"
+                            }`}
                         >
                             {buyingNow
                                 ? "Processing..."
@@ -240,7 +235,6 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
                                 : "Unavailable"}
                         </button>
 
-                        
                         <button
                             onClick={() => navigate('/allproducts')}
                             className="px-6 py-3 border border-[#B37869] text-[#B37869] rounded-xl hover:bg-[#F2E8E6]"
@@ -249,7 +243,9 @@ function ProductDetails({ handleAddToCart, refreshCartCount }) {
                         </button>
 
                         {!currentUser && (
-                            <p className="text-sm text-amber-600">💡 Login required to purchase</p>
+                            <p className="text-sm text-amber-600">
+                                💡 Login required to purchase
+                            </p>
                         )}
 
                         {currentUser?.isBlocked && (

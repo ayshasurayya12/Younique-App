@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, ShoppingBag, Calendar, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import client from '../api/client';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,19 +23,17 @@ const Profile = () => {
       try {
         const userFromStorage = JSON.parse(userData);
 
-        const response = await fetch(`http://localhost:3000/users/${userFromStorage.id}`);
-        if (!response.ok) throw new Error('Failed to fetch user data');
-
-        const userDataFromServer = await response.json();
+        const response = await client.get(`/auth/profile/`);
+        const userDataFromServer = response.data;
 
         setUser({
           id: userDataFromServer.id,
-          name: userDataFromServer.fullName || userFromStorage.name || 'User',
+          name: userDataFromServer.first_name || userFromStorage.name || 'User',
           email: userDataFromServer.email || userFromStorage.email || 'No email',
           phone: userDataFromServer.phone || 'No phone number',
           username: userDataFromServer.username || userFromStorage.username || '',
-          joinedDate: userDataFromServer.createdAt
-            ? new Date(userDataFromServer.createdAt).toLocaleDateString('en-US', {
+          joinedDate: userDataFromServer.date_joined
+            ? new Date(userDataFromServer.date_joined).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -43,15 +41,13 @@ const Profile = () => {
             : 'Recently'
         });
 
-        const allOrders = userDataFromServer.orders || [];
+        // get orders count and recent orders from backend
+        const ordersRes = await client.get('/orders/list/');
+        const allOrders = ordersRes.data || [];
         setTotalOrdersCount(allOrders.length);
 
         if (allOrders.length > 0) {
-          const sortedOrders = [...allOrders]
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 2);
-
-          setRecentOrders(sortedOrders);
+          setRecentOrders(allOrders.slice(0, 2));
         }
       } catch (error) {
         console.error(error);
@@ -66,6 +62,8 @@ const Profile = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     toast.success('Logged out successfully');
     navigate('/');
   };
@@ -177,17 +175,17 @@ const Profile = () => {
               <div className="space-y-4">
                 {recentOrders.map((order) => (
                   <Link
-                    key={order.id}
-                    to={`/order-confirmation/${order.id}`}
+                    key={order.order_number}
+                    to={`/order-confirmation/${order.order_number}`}
                     className="block p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <ShoppingBag size={20} className="text-[#B37869]" />
                         <div>
-                          <p className="font-medium">Order #{order.id}</p>
+                          <p className="font-medium">Order #{order.order_number}</p>
                           <p className="text-sm text-gray-600">
-                            {new Date(order.date).toLocaleDateString('en-US', {
+                            {new Date(order.created_at).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric'
@@ -197,7 +195,7 @@ const Profile = () => {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-lg font-bold mt-2">₹{order.totals?.total || '0.00'}</p>
+                        <p className="text-lg font-bold mt-2">₹{order.total || '0.00'}</p>
                       </div>
                     </div>
                   </Link>

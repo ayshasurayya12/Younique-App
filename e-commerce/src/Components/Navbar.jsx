@@ -2,6 +2,7 @@ import { Search, ShoppingCart, User, Package, Menu, X } from 'lucide-react';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/imgs/logo.png';
+import client from '../api/client';
 
 const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
     const location = useLocation();
@@ -10,7 +11,6 @@ const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
     const hideNavbar =
         location.pathname === "/login" || location.pathname === "/signup";
 
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [mobileMenu, setMobileMenu] = useState(false);
     const [cartCount, setCartCount] = useState(0);
@@ -20,39 +20,28 @@ const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
         location.pathname.startsWith("/product/");
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isLoggedIn = Boolean(user.id || user.username || user.email);
 
     
     const fetchCartCount = useCallback(async () => {
-        try {
-            const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-            if (!storedUser.id) return setCartCount(0);
+    try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return setCartCount(0);
 
-            const res = await fetch(`http://localhost:3000/users/${storedUser.id}`);
-            const userFromServer = await res.json();
-
-            const total = (userFromServer.cart || []).reduce(
-                (sum, item) => sum + (item.quantity || 0),
-                0
-            );
-
-            setCartCount(total);
-            localStorage.setItem("user", JSON.stringify(userFromServer));
-        } catch (err) {
-            console.error("Cart load error:", err);
-            setCartCount(0);
-        }
-    }, []);
+        const res = await client.get('/cart/count/');
+        setCartCount(res.data.count);
+    } catch {
+        setCartCount(0);
+    }
+}, []);
 
     useEffect(() => {
-        const data = localStorage.getItem("user");
-        if (data) setIsLoggedIn(true);
-        else {
-            setIsLoggedIn(false);
+        if (!isLoggedIn) {
             setCartCount(0);
         }
 
         fetchCartCount();
-    }, [location, cartRefreshTrigger, fetchCartCount]);
+    }, [location, cartRefreshTrigger, fetchCartCount, isLoggedIn]);
 
     
     const handleUserClick = () => {

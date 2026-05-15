@@ -1,25 +1,21 @@
-import axios from 'axios';
-import { useEffect, useState } from 'react';
-
+import client from './api/client';
 
 export const fetchAllProducts = async () => {
-  try {
-    const response = await axios.get('http://localhost:3000/products');
-    
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching products from API:", error);
-    return []; 
-  }
+    try {
+        const response = await client.get('/products/');
+        return response.data.results || response.data;
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        return [];
+    }
 };
 
 export const checkApiHealth = async () => {
     try {
-        const response = await axios.get('http://localhost:3000/products');
-        console.log('API Health Check:', response.status);
+        const response = await client.get('/products/');
         return response.status === 200;
     } catch (error) {
         console.error('API is not reachable:', error);
         return false;
     }
-}
+};

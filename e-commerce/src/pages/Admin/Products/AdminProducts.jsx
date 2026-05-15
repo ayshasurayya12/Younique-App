@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { getImageSrc } from "../../../utils/imageHelper";
 
 const API_URL = "http://localhost:3000/products";
 
@@ -132,7 +133,7 @@ const AdminProducts = () => {
               >
                 <td className="p-3">
                   <img
-                    src={product.image}
+                    src={getImageSrc(product.image)}
                     alt={product.title}
                     className="w-14 h-14 object-contain border rounded"
                   />

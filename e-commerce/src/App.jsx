@@ -31,7 +31,7 @@ import ScrollToTop from './ScrollToTop'
 const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState([])
-  const [user, setUser] = useState(null)
+  const [, setUser] = useState(null)
   const [cartRefreshTrigger, setCartRefreshTrigger] = useState(0)
 
   

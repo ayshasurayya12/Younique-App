@@ -2,6 +2,7 @@ import React from 'react';
 import Footer from '../Components/Footer'; 
 import { Leaf, FlaskConical, Heart } from 'lucide-react';
 import {useNavigate} from 'react-router-dom'
+import heroo from '../assets/imgs/herosection.png';
 
 const About = () => {
   const navigate = useNavigate()
@@ -35,10 +36,9 @@ const About = () => {
               Every product, from our gentle cleansers to our powerful sunscreens, is designed to enhance your skin's natural health, not cover it up. We stand for clean formulations and clear results.
             </p>
           </div>
-          <div className='h-96 bg-gray-100 rounded-lg shadow-xl overflow-hidden'>
-            <img src="./herooo.png"/>
-            
-          </div>
+          <div className='w-full rounded-lg shadow-xl overflow-hidden'>
+  <img src={heroo} className="w-full h-auto object-cover"/>
+</div>
         </section>
         
         

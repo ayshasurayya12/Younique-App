@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { fetchAllProducts } from '../productContents'; 
 import ProductGrid from '../Components/ProductGrid';
 import { ChevronDown, Grid, List } from 'lucide-react'; 
+import client from '../api/client';
 
 function AllProducts({ searchQuery }) {
     const [allProducts, setAllProducts] = useState([]); 
@@ -9,6 +10,7 @@ function AllProducts({ searchQuery }) {
     const [activeCategory, setActiveCategory] = useState("All Products");
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
+    const [categories, setCategories] = useState(["All Products"]);
 
 
     useEffect(() => {
@@ -33,6 +35,7 @@ useEffect(() => {
             }
             
             setAllProducts(data);
+            console.log('First product:', data[0]);
         } catch (error) {
             console.error('Failed to load products:', error);
         } finally {
@@ -43,13 +46,20 @@ useEffect(() => {
     loadProducts();
 }, []);
 
-    const categories = [
-        "All Products",
-        "Cleanser",
-        "Sunscreen",
-        "Moisturizer",
-        "Serum",
-    ];
+    
+
+useEffect(() => {
+    const loadCategories = async () => {
+        try {
+            const res = await client.get('/categories/');
+            const names = res.data.map(c => c.name);
+            setCategories(["All Products", ...names]);
+        } catch {
+            console.error('Failed to load categories');
+        }
+    };
+    loadCategories();
+}, []);
 
     const handleCategoryClick = (category) => {
         setActiveCategory(category);
@@ -57,14 +67,14 @@ useEffect(() => {
     };
 
     const filteredProducts = allProducts.filter((product) => {
-        const categoryMatch = activeCategory === "All Products" || product.category === activeCategory;
-        const lowerCaseQuery = searchQuery.toLowerCase();
-        const titleMatch = product.title.toLowerCase().includes(lowerCaseQuery);
-        const descriptionMatch = product.description.toLowerCase().includes(lowerCaseQuery);
-        const queryMatch = titleMatch || descriptionMatch;
-
-        return categoryMatch && queryMatch;
-    });
+    if (!product || !product.title) return false;
+    const categoryMatch = activeCategory === "All Products" || 
+        product.category?.name === activeCategory;
+    const lowerCaseQuery = (searchQuery || '').toLowerCase();
+    const titleMatch = (product.title || '').toLowerCase().includes(lowerCaseQuery);
+    const descriptionMatch = (product.description || '').toLowerCase().includes(lowerCaseQuery);
+    return categoryMatch && (titleMatch || descriptionMatch);
+});
 
     if (loading) {
         return <div className='text-center text-2xl p-10'>Loading Products...</div>;

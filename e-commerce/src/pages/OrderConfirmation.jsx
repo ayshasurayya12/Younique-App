@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Package, Truck, Home, ShoppingBag } from 'lucide-react';
-import toast from 'react-hot-toast';
+import client from '../api/client';
+import { getImageSrc } from '../utils/imageHelper';
 
 const OrderConfirmation = () => {
     const { orderId } = useParams();
@@ -14,7 +15,6 @@ const OrderConfirmation = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                
                 const userData = localStorage.getItem('user');
                 if (!userData) {
                     navigate('/login');
@@ -23,24 +23,8 @@ const OrderConfirmation = () => {
                 const user = JSON.parse(userData);
                 setCurrentUser(user);
                 
-                
-                const response = await fetch(`http://localhost:3000/users/${user.id}`);
-                if (!response.ok) {
-                    throw new Error('User not found');
-                }
-                
-                const userDataFromServer = await response.json();
-                
-                
-                const foundOrder = userDataFromServer.orders?.find(order => order.id === orderId);
-                
-                if (!foundOrder) {
-                    toast.error('Order not found');
-                    navigate('/');
-                    return;
-                }
-                
-                setOrder(foundOrder);
+                const response = await client.get(`/orders/${orderId}/`);
+                setOrder(response.data);
             } catch (error) {
                 console.error('Error fetching order:', error);
                 toast.error('Failed to load order details');
@@ -90,10 +74,10 @@ const OrderConfirmation = () => {
                     </div>
                     <h1 className="text-4xl font-bold text-gray-800 mb-3">Order Confirmed!</h1>
                     <p className="text-gray-600 text-lg">
-                        Thank you for your purchase, {order.shippingInfo.fullName}!
+                        Thank you for your purchase, {order.shipping_name}!
                     </p>
                     <p className="text-gray-600">
-                        A confirmation email has been sent to {order.shippingInfo.email}
+                        A confirmation email has been sent to your registered email address.
                     </p>
                 </div>
                 
@@ -106,13 +90,13 @@ const OrderConfirmation = () => {
                             
                             <div className="space-y-3">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Order ID:</span>
-                                    <span className="font-semibold">{order.id}</span>
+                                    <span className="text-gray-600">Order Number:</span>
+                                    <span className="font-semibold">{order.order_number}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Order Date:</span>
                                     <span className="font-semibold">
-                                        {new Date(order.date).toLocaleDateString('en-US', {
+                                        {new Date(order.created_at).toLocaleDateString('en-US', {
                                             weekday: 'long',
                                             year: 'numeric',
                                             month: 'long',
@@ -123,9 +107,9 @@ const OrderConfirmation = () => {
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Status:</span>
                                     <span className={`font-semibold px-3 py-1 rounded-full text-sm ${
-                                        order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
-                                        order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                                        order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
+                                        order.status.toLowerCase() === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                        order.status.toLowerCase() === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                        order.status.toLowerCase() === 'delivered' ? 'bg-green-100 text-green-800' :
                                         'bg-gray-100 text-gray-800'
                                     }`}>
                                         {order.status}
@@ -133,7 +117,7 @@ const OrderConfirmation = () => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Payment Method:</span>
-                                    <span className="font-semibold text-[#B37869]">{order.paymentMethod || 'Cash on Delivery'}</span>
+                                    <span className="font-semibold text-[#B37869]">{order.payment_method || 'Cash on Delivery'}</span>
                                 </div>
                             </div>
                         </div>
@@ -146,10 +130,10 @@ const OrderConfirmation = () => {
                             </div>
                             
                             <div className="space-y-2">
-                                <p className="font-semibold">{order.shippingInfo.fullName}</p>
-                                <p>📞 {order.shippingInfo.phone}</p>
-                                <p>📧 {order.shippingInfo.email}</p>
-                                <p className="pt-2">📍 Pincode: {order.shippingInfo.pincode}</p>
+                                <p className="font-semibold">{order.shipping_name}</p>
+                                <p>📞 {order.shipping_phone}</p>
+                                <p className="pt-2">📍 {order.shipping_house_no}, {order.shipping_street}</p>
+                                <p className="pl-6">{order.shipping_city}, {order.shipping_state} - {order.shipping_pincode}</p>
                             </div>
                         </div>
                     </div>
@@ -164,15 +148,14 @@ const OrderConfirmation = () => {
                                 {order.items.map((item, index) => (
                                     <div key={index} className="flex items-center gap-4 border-b pb-4 last:border-0">
                                         <img 
-                                            src={item.image} 
+                                            src={getImageSrc(item.image)} 
                                             alt={item.title}
                                             className="w-16 h-16 object-cover rounded"
                                         />
                                         <div className="flex-1">
                                             <p className="font-semibold">{item.title}</p>
-                                            <p className="text-sm text-gray-600">{item.category}</p>
                                             <p className="text-sm text-gray-600">
-                                                Quantity: {item.quantity} × ₹{item.price.toFixed(2)}
+                                                Quantity: {item.quantity} × ₹{parseFloat(item.price).toFixed(2)}
                                             </p>
                                         </div>
                                         <p className="font-bold">
@@ -190,16 +173,16 @@ const OrderConfirmation = () => {
                             <div className="space-y-3">
                                 <div className="flex justify-between">
                                     <span>Subtotal:</span>
-                                    <span>₹{order.totals.subtotal}</span>
+                                    <span>₹{order.subtotal}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Shipping:</span>
-                                    <span>₹{order.totals.shipping}</span>
+                                    <span>₹{order.shipping_cost}</span>
                                 </div>
                                 <div className="border-t pt-3">
                                     <div className="flex justify-between text-xl font-bold">
                                         <span>Total:</span>
-                                        <span>₹{order.totals.total}</span>
+                                        <span>₹{order.total}</span>
                                     </div>
                                 </div>
                             </div>
@@ -237,7 +220,7 @@ const OrderConfirmation = () => {
                         You will receive tracking information via email once your order ships.
                     </p>
                     <p className="text-gray-700 mt-2 font-semibold">
-                        💰 Please keep <span className="text-[#B37869]">₹{order.totals.total}</span> in cash ready for delivery.
+                        💰 Please keep <span className="text-[#B37869]">₹{order.total}</span> in cash ready for delivery.
                     </p>
                 </div>
             </div>
