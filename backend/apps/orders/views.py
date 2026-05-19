@@ -117,6 +117,7 @@ class CartCountView(APIView):
 
 class PlaceOrderView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'checkout'
 
     def post(self, request):
         serializer = PlaceOrderSerializer(data=request.data)
@@ -169,12 +170,43 @@ class PlaceOrderView(APIView):
         timestamp = int(timezone.now().timestamp() * 1000)
         order_number = f"ORD-{timestamp}"
 
+        # determine initial status and handle Razorpay order creation
+        payment_method = data.get('payment_method', 'Cash on Delivery')
+        initial_status = Order.Status.PROCESSING
+        razorpay_order_id = None
+
+        if payment_method == 'Razorpay':
+            initial_status = Order.Status.PAYMENT_PENDING
+            try:
+                import razorpay
+                from django.conf import settings
+                
+                razorpay_client = razorpay.Client(
+                    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+                )
+                
+                # Razorpay amount is in paise (1 INR = 100 paise)
+                razorpay_amount = int(float(total) * 100)
+                
+                razorpay_order = razorpay_client.order.create({
+                    "amount": razorpay_amount,
+                    "currency": "INR",
+                    "receipt": order_number,
+                    "payment_capture": 1
+                })
+                razorpay_order_id = razorpay_order.get('id')
+            except Exception as e:
+                return Response(
+                    {'error': f'Failed to initiate payment with Razorpay: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
         # create order
         order = Order.objects.create(
             user=request.user,
             order_number=order_number,
-            status=Order.Status.PROCESSING,
-            payment_method=data.get('payment_method', 'Cash on Delivery'),
+            status=initial_status,
+            payment_method=payment_method,
             shipping_name=data['shipping_name'],
             shipping_phone=data['shipping_phone'],
             shipping_house_no=data['shipping_house_no'],
@@ -186,6 +218,7 @@ class PlaceOrderView(APIView):
             shipping_cost=shipping_cost,
             tax=tax,
             total=total,
+            razorpay_order_id=razorpay_order_id
         )
 
         # create order items + deduct stock
@@ -209,7 +242,12 @@ class PlaceOrderView(APIView):
         if not is_buy_now:
             CartItem.objects.filter(user=request.user).delete()
 
-        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+        response_data = OrderSerializer(order).data
+        if payment_method == 'Razorpay':
+            from django.conf import settings
+            response_data['razorpay_key_id'] = settings.RAZORPAY_KEY_ID
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class OrderListView(APIView):
@@ -246,9 +284,9 @@ class CancelOrderView(APIView):
         except Order.DoesNotExist:
             return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if order.status != Order.Status.PROCESSING:
+        if order.status not in [Order.Status.PROCESSING, Order.Status.PAYMENT_PENDING]:
             return Response(
-                {'error': 'Only processing orders can be cancelled'},
+                {'error': 'Only processing or pending orders can be cancelled'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -280,3 +318,61 @@ class DeleteOrderView(APIView):
 
         order.delete()
         return Response({'message': 'Order deleted'}, status=status.HTTP_200_OK)
+
+
+class VerifyRazorpayPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        order_number = request.data.get('order_number')
+        razorpay_order_id = request.data.get('razorpay_order_id')
+        razorpay_payment_id = request.data.get('razorpay_payment_id')
+        razorpay_signature = request.data.get('razorpay_signature')
+
+        if not all([order_number, razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+            return Response(
+                {'error': 'Missing required payment verification details'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            order = Order.objects.get(order_number=order_number, user=request.user)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # verify signature
+        import razorpay
+        from django.conf import settings
+        
+        razorpay_client = razorpay.Client(
+            auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+        )
+
+        try:
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            
+            # signature is valid, update order status to processing
+            order.status = Order.Status.PROCESSING
+            order.razorpay_payment_id = razorpay_payment_id
+            order.razorpay_signature = razorpay_signature
+            order.save()
+
+            return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
+        except razorpay.errors.SignatureVerificationError:
+            order.status = Order.Status.FAILED
+            order.save()
+            return Response(
+                {'error': 'Payment verification failed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'An error occurred during verification: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

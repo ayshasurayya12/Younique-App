@@ -16,6 +16,8 @@ class Order(models.Model):
         SHIPPED = 'Shipped', 'Shipped'
         DELIVERED = 'Delivered', 'Delivered'
         CANCELLED = 'Cancelled', 'Cancelled'
+        PAYMENT_PENDING = 'Payment Pending', 'Payment Pending'
+        FAILED = 'Failed', 'Failed'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     order_number = models.CharField(max_length=50, unique=True)
@@ -32,6 +34,9 @@ class Order(models.Model):
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    razorpay_order_id = models.CharField(max_length=255, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=255, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class OrderItem(models.Model):

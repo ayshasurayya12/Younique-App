@@ -1,16 +1,15 @@
-
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 export default function AdminRoute({ children }) {
-  const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
 
-  if (!storedUser) return <Navigate to="/login" replace />;
+    if (!storedUser) return <Navigate to="/login" replace />;
 
-  const user = JSON.parse(storedUser);
+    const user = JSON.parse(storedUser);
 
-  if (user.role !== "admin") {
-    return <Navigate to="/not-authorized" replace />;
-  }
+    if (user.role !== "admin") {
+        return <Navigate to="/not-authorized" replace />;
+    }
 
-  return children;
+    return children;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, Truck, Home, ShoppingBag } from 'lucide-react';
+import { CheckCircle, Package, Truck, Home, ShoppingBag, XCircle, AlertCircle } from 'lucide-react';
 import client from '../api/client';
 import { getImageSrc } from '../utils/imageHelper';
 
@@ -23,7 +23,7 @@ const OrderConfirmation = () => {
                 const user = JSON.parse(userData);
                 setCurrentUser(user);
                 
-                const response = await client.get(`/orders/${orderId}/`);
+                const response = await client.get(`orders/${orderId}/`);
                 setOrder(response.data);
             } catch (error) {
                 console.error('Error fetching order:', error);
@@ -67,18 +67,49 @@ const OrderConfirmation = () => {
             <div className="max-w-4xl mx-auto">
                 
                 <div className="text-center mb-10">
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-green-100 p-4 rounded-full">
-                            <CheckCircle size={48} className="text-green-600" />
-                        </div>
-                    </div>
-                    <h1 className="text-4xl font-bold text-gray-800 mb-3">Order Confirmed!</h1>
-                    <p className="text-gray-600 text-lg">
-                        Thank you for your purchase, {order.shipping_name}!
-                    </p>
-                    <p className="text-gray-600">
-                        A confirmation email has been sent to your registered email address.
-                    </p>
+                    {order.status.toLowerCase() === 'failed' ? (
+                        <>
+                            <div className="flex justify-center mb-4">
+                                <div className="bg-red-100 p-4 rounded-full">
+                                    <XCircle size={48} className="text-red-600" />
+                                </div>
+                            </div>
+                            <h1 className="text-4xl font-bold text-red-600 mb-3">Payment Failed</h1>
+                            <p className="text-gray-600 text-lg">
+                                The payment verification for your order was unsuccessful.
+                            </p>
+                            <p className="text-gray-500 mt-2">
+                                Please try placing the order again or choose Cash on Delivery.
+                            </p>
+                        </>
+                    ) : order.status.toLowerCase() === 'payment pending' ? (
+                        <>
+                            <div className="flex justify-center mb-4">
+                                <div className="bg-yellow-100 p-4 rounded-full">
+                                    <AlertCircle size={48} className="text-yellow-600" />
+                                </div>
+                            </div>
+                            <h1 className="text-4xl font-bold text-yellow-600 mb-3">Payment Pending</h1>
+                            <p className="text-gray-600 text-lg">
+                                We are waiting for payment confirmation for your order.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex justify-center mb-4">
+                                <div className="bg-green-100 p-4 rounded-full">
+                                    <CheckCircle size={48} className="text-green-600" />
+                                </div>
+                            </div>
+                            <h1 className="text-4xl font-bold text-gray-800 mb-3">Order Confirmed!</h1>
+                            <p className="text-gray-600 text-lg">
+                                Thank you for your purchase, {order.shipping_name}!
+                            </p>
+                            <p className="text-gray-600">
+                                A confirmation email has been sent to your registered email address.
+                            </p>
+                        </>
+                    )}
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -110,6 +141,8 @@ const OrderConfirmation = () => {
                                         order.status.toLowerCase() === 'processing' ? 'bg-yellow-100 text-yellow-800' :
                                         order.status.toLowerCase() === 'shipped' ? 'bg-blue-100 text-blue-800' :
                                         order.status.toLowerCase() === 'delivered' ? 'bg-green-100 text-green-800' :
+                                        order.status.toLowerCase() === 'payment pending' ? 'bg-orange-100 text-orange-800' :
+                                        order.status.toLowerCase() === 'failed' ? 'bg-red-100 text-red-800' :
                                         'bg-gray-100 text-gray-800'
                                     }`}>
                                         {order.status}
@@ -219,9 +252,15 @@ const OrderConfirmation = () => {
                         Your order will be delivered within <span className="font-semibold">3-5 business days</span>. 
                         You will receive tracking information via email once your order ships.
                     </p>
-                    <p className="text-gray-700 mt-2 font-semibold">
-                        💰 Please keep <span className="text-[#B37869]">₹{order.total}</span> in cash ready for delivery.
-                    </p>
+                    {order.payment_method === 'Cash on Delivery' ? (
+                        <p className="text-gray-700 mt-2 font-semibold">
+                            💰 Please keep <span className="text-[#B37869]">₹{order.total}</span> in cash ready for delivery.
+                        </p>
+                    ) : (
+                        <p className="text-gray-700 mt-2 font-semibold text-green-700">
+                            ✓ Payment received online via Razorpay. No cash needed at delivery.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

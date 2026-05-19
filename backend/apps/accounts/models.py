@@ -4,6 +4,7 @@ from django.db import models
 class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     is_blocked = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
 
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')

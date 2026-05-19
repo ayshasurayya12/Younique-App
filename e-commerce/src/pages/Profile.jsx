@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, ShoppingBag, Calendar, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import toast from 'react-hot-toast';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const Profile = () => {
       try {
         const userFromStorage = JSON.parse(userData);
 
-        const response = await client.get(`/auth/profile/`);
+        const response = await client.get(`auth/profile/`);
         const userDataFromServer = response.data;
 
         setUser({
@@ -42,7 +43,7 @@ const Profile = () => {
         });
 
         // get orders count and recent orders from backend
-        const ordersRes = await client.get('/orders/list/');
+        const ordersRes = await client.get('orders/list/');
         const allOrders = ordersRes.data || [];
         setTotalOrdersCount(allOrders.length);
 

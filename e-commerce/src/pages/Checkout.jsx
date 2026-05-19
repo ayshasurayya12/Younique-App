@@ -15,10 +15,15 @@ const Checkout = ({ refreshCartCount }) => {
     const [selectedAddressIndex, setSelectedAddressIndex] = useState(null);
     const [showAddAddressModal, setShowAddAddressModal] = useState(false);
     const [newAddress, setNewAddress] = useState({ full_name: "", phone: "", house_no: "", street: "", city: "", state: "", pincode: "" });
+    const [paymentMethod, setPaymentMethod] = useState("Cash on Delivery");
 
     const [shippingInfo, setShippingInfo] = useState({
         fullName: "", phone: "", houseNo: "", street: "", city: "", state: "", pincode: "",
     });
+    const [addressErrors, setAddressErrors] = useState({
+    full_name: "", phone: "", house_no: "",
+    street: "", city: "", state: "", pincode: ""
+});
 
     useEffect(() => {
         const load = async () => {
@@ -38,7 +43,7 @@ const Checkout = ({ refreshCartCount }) => {
 
             try {
                 // load saved addresses
-                const addrRes = await client.get('/auth/addresses/');
+                const addrRes = await client.get('auth/addresses/');
                 setSavedAddresses(addrRes.data);
 
                 // load cart or buy now
@@ -57,7 +62,7 @@ const Checkout = ({ refreshCartCount }) => {
                         quantity: p.product.quantity,
                     }]);
                 } else {
-                    const cartRes = await client.get('/cart/');
+                    const cartRes = await client.get('cart/');
                     setCart(cartRes.data);
                 }
             } catch {
@@ -74,20 +79,36 @@ const Checkout = ({ refreshCartCount }) => {
     const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
     const saveNewAddress = async () => {
-        const { full_name, phone, house_no, street, city, state, pincode } = newAddress;
-        if (!full_name || !phone || !house_no || !street || !city || !state || !pincode) {
-            toast.error("Please fill all address fields");
-            return;
-        }
+    // validate all fields first
+    const fields = ['full_name', 'phone', 'house_no', 'street', 'city', 'state', 'pincode'];
+    let hasError = false;
 
-        try {
-            const res = await client.post('/auth/addresses/', newAddress);
-            setSavedAddresses([...savedAddresses, res.data]);
-            setShowAddAddressModal(false);
-            toast.success("Address saved!");
-        } catch {
-            toast.error("Failed to save address");
-        }
+    fields.forEach(field => {
+        const error = validateAddressField(field, newAddress[field] || '');
+        if (error) hasError = true;
+    });
+
+    if (hasError) return;
+
+    try {
+        const res = await client.post('auth/addresses/', newAddress);
+        setSavedAddresses([...savedAddresses, res.data]);
+        setShowAddAddressModal(false);
+        setNewAddress({ full_name: "", phone: "", house_no: "", street: "", city: "", state: "", pincode: "" });
+        toast.success("Address saved!");
+    } catch {
+        toast.error("Failed to save address");
+    }
+};
+
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
     };
 
     const placeOrder = async () => {
@@ -99,6 +120,15 @@ const Checkout = ({ refreshCartCount }) => {
 
         setPlacingOrder(true);
 
+        if (paymentMethod === "Razorpay") {
+            const resScript = await loadRazorpayScript();
+            if (!resScript) {
+                toast.error("Razorpay SDK failed to load. Are you online?");
+                setPlacingOrder(false);
+                return;
+            }
+        }
+
         try {
             const orderData = {
                 shipping_name: fullName,
@@ -108,7 +138,7 @@ const Checkout = ({ refreshCartCount }) => {
                 shipping_city: city,
                 shipping_state: state,
                 shipping_pincode: pincode,
-                payment_method: 'Cash on Delivery',
+                payment_method: paymentMethod,
                 is_buy_now: isBuyNow,
                 ...(isBuyNow && {
                     buy_now_product_id: cart[0].product.id,
@@ -116,21 +146,103 @@ const Checkout = ({ refreshCartCount }) => {
                 }),
             };
 
-            const res = await client.post('/orders/', orderData);
+            const res = await client.post('orders/', orderData);
 
-            if (isBuyNow) localStorage.removeItem("buyNowProduct");
-            refreshCartCount?.();
+            if (paymentMethod === "Cash on Delivery") {
+                if (isBuyNow) localStorage.removeItem("buyNowProduct");
+                refreshCartCount?.();
 
-            toast.success("Order placed!");
-            navigate(`/order-confirmation/${res.data.order_number}`);
+                toast.success("Order placed!");
+                navigate(`/order-confirmation/${res.data.order_number}`);
+            } else if (paymentMethod === "Razorpay") {
+                const options = {
+                    key: res.data.razorpay_key_id,
+                    amount: Math.round(res.data.total * 100),
+                    currency: "INR",
+                    name: "Younique",
+                    description: `Payment for order ${res.data.order_number}`,
+                    order_id: res.data.razorpay_order_id,
+                    handler: async function (response) {
+                        try {
+                            const verifyRes = await client.post('orders/razorpay/verify/', {
+                                order_number: res.data.order_number,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            });
+
+                            if (isBuyNow) localStorage.removeItem("buyNowProduct");
+                            refreshCartCount?.();
+
+                            toast.success("Payment successful! Order placed.");
+                            navigate(`/order-confirmation/${verifyRes.data.order_number}`);
+                        } catch (err) {
+                            toast.error(err.response?.data?.error || "Payment verification failed.");
+                            setPlacingOrder(false);
+                        }
+                    },
+                    prefill: {
+                        name: fullName,
+                        contact: phone,
+                        email: JSON.parse(localStorage.getItem("user"))?.email || "",
+                    },
+                    theme: {
+                        color: "#B37869",
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            toast.error("Payment cancelled");
+                            setPlacingOrder(false);
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    toast.error("Payment failed: " + response.error.description);
+                    setPlacingOrder(false);
+                });
+                rzp.open();
+            }
         } catch (err) {
             toast.error(err.response?.data?.error || "Order failed, try again");
-        } finally {
             setPlacingOrder(false);
         }
     };
 
     if (loading) return <div className="p-10 text-center">Loading...</div>;
+
+    const validateAddressField = (name, value) => {
+    let error = "";
+    if (name === "phone") {
+        if (!value) error = "Phone is required";
+        else if (!/^\d{10}$/.test(value)) error = "Must be 10 digits";
+    } else if (name === "pincode") {
+        if (!value) error = "Pincode is required";
+        else if (!/^\d{6}$/.test(value)) error = "Must be 6 digits";
+    } else {
+        if (!value.trim()) error = `${name.replace("_", " ")} is required`;
+    }
+    setAddressErrors(prev => ({ ...prev, [name]: error }));
+    return error;
+};
+
+const handleAddressChange = (field, value) => {
+    setNewAddress({ ...newAddress, [field]: value });
+    validateAddressField(field, value);
+};
+
+const addressInputClass = (field) =>
+    `w-full border p-3 rounded-lg outline-none transition focus:ring-2 ${
+        addressErrors[field]
+            ? "border-red-400 focus:ring-red-300"
+            : "border-gray-300 focus:ring-[#B37869]"
+    }`;
+
+const AddressFieldError = ({ field }) =>
+    addressErrors[field] ? (
+        <p className="text-red-500 text-xs mt-1 ml-1">{addressErrors[field]}</p>
+    ) : null;
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -256,9 +368,41 @@ const Checkout = ({ refreshCartCount }) => {
                             <Truck size={24} className="text-[#B37869]" />
                             <h2 className="text-2xl font-bold">Payment Method</h2>
                         </div>
-                        <div className="p-4 bg-[#F2E8E6] border rounded-lg flex items-center gap-3">
-                            <Truck size={20} className="text-[#B37869]" />
-                            <p>Cash on Delivery</p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div 
+                                onClick={() => setPaymentMethod("Cash on Delivery")}
+                                className={`p-4 border rounded-xl flex items-center gap-3 cursor-pointer transition ${paymentMethod === 'Cash on Delivery' ? "border-[#B37869] bg-[#F2E8E6]" : "border-gray-200 hover:bg-gray-50"}`}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="payment_method" 
+                                    checked={paymentMethod === 'Cash on Delivery'} 
+                                    onChange={() => setPaymentMethod("Cash on Delivery")}
+                                    className="accent-[#B37869] h-4 w-4"
+                                />
+                                <div>
+                                    <p className="font-semibold text-gray-800">Cash on Delivery</p>
+                                    <p className="text-xs text-gray-500">Pay when order is delivered</p>
+                                </div>
+                            </div>
+                            
+                            <div 
+                                onClick={() => setPaymentMethod("Razorpay")}
+                                className={`p-4 border rounded-xl flex items-center gap-3 cursor-pointer transition ${paymentMethod === 'Razorpay' ? "border-[#B37869] bg-[#F2E8E6]" : "border-gray-200 hover:bg-gray-50"}`}
+                            >
+                                <input 
+                                    type="radio" 
+                                    name="payment_method" 
+                                    checked={paymentMethod === 'Razorpay'} 
+                                    onChange={() => setPaymentMethod("Razorpay")}
+                                    className="accent-[#B37869] h-4 w-4"
+                                />
+                                <div>
+                                    <p className="font-semibold text-gray-800">Pay Online (Razorpay)</p>
+                                    <p className="text-xs text-gray-500">Pay securely with Cards/UPI/Netbanking</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -298,81 +442,102 @@ const Checkout = ({ refreshCartCount }) => {
             </div>
 
             {showAddAddressModal && (
-                <div className="fixed inset-0 bg-[#F2E8E6] bg-opacity-40 backdrop-blur-sm flex justify-center p-4 z-50 overflow-y-auto">
-                    <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border border-[#E4D5D0] h-fit my-auto">
-                        <h2 className="text-2xl font-bold mb-4 text-[#B37869]">Add New Address</h2>
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onChange={(e) => setNewAddress({ ...newAddress, full_name: e.target.value })}
-                                        placeholder="Full Name" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Phone Number</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
-                                        onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                                        placeholder="Phone Number" />
-                                </div>
-                            </div>
+    <div className="fixed inset-0 bg-[#F2E8E6] bg-opacity-40 backdrop-blur-sm flex justify-center p-4 z-50 overflow-y-auto">
+        <div className="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border border-[#E4D5D0] h-fit my-auto">
+            <h2 className="text-2xl font-bold mb-4 text-[#B37869]">Add New Address</h2>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">House No</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
-                                        onChange={(e) => setNewAddress({ ...newAddress, house_no: e.target.value })}
-                                        placeholder="House No" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Street</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                                        placeholder="Street" />
-                                </div>
-                            </div>
+            <div className="space-y-3">
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                                        placeholder="City" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
-                                    <input type="text"
-                                        className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                        onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                                        placeholder="State" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Pincode</label>
-                                <input type="text"
-                                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-[#B37869]"
-                                    onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
-                                    onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
-                                    placeholder="Pincode" />
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button onClick={() => setShowAddAddressModal(false)}
-                                className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100">Cancel</button>
-                            <button onClick={saveNewAddress}
-                                className="px-5 py-2 rounded-xl bg-[#B37869] text-white hover:bg-[#C58B7A] shadow-md">Save Address</button>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
+                        <input type="text"
+                            className={addressInputClass("full_name")}
+                            onChange={(e) => handleAddressChange("full_name", e.target.value)}
+                            placeholder="Full Name" />
+                        <AddressFieldError field="full_name" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">Phone Number</label>
+                        <input type="text"
+                            className={addressInputClass("phone")}
+                            onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                            onChange={(e) => handleAddressChange("phone", e.target.value)}
+                            placeholder="10-digit number" />
+                        <AddressFieldError field="phone" />
                     </div>
                 </div>
-            )}
+
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">House No</label>
+                        <input type="text"
+                            className={addressInputClass("house_no")}
+                            onChange={(e) => handleAddressChange("house_no", e.target.value)}
+                            placeholder="House No" />
+                        <AddressFieldError field="house_no" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">Street</label>
+                        <input type="text"
+                            className={addressInputClass("street")}
+                            onChange={(e) => handleAddressChange("street", e.target.value)}
+                            placeholder="Street" />
+                        <AddressFieldError field="street" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">City</label>
+                        <input type="text"
+                            className={addressInputClass("city")}
+                            onChange={(e) => handleAddressChange("city", e.target.value)}
+                            placeholder="City" />
+                        <AddressFieldError field="city" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-700">State</label>
+                        <input type="text"
+                            className={addressInputClass("state")}
+                            onChange={(e) => handleAddressChange("state", e.target.value)}
+                            placeholder="State" />
+                        <AddressFieldError field="state" />
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">Pincode</label>
+                    <input type="text"
+                        className={addressInputClass("pincode")}
+                        onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                        onChange={(e) => handleAddressChange("pincode", e.target.value)}
+                        placeholder="6-digit pincode" />
+                    <AddressFieldError field="pincode" />
+                </div>
+
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+                <button
+                    onClick={() => {
+                        setShowAddAddressModal(false);
+                        setAddressErrors({
+                            full_name: "", phone: "", house_no: "",
+                            street: "", city: "", state: "", pincode: ""
+                        });
+                    }}
+                    className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100">
+                    Cancel
+                </button>
+                <button onClick={saveNewAddress}
+                    className="px-5 py-2 rounded-xl bg-[#B37869] text-white hover:bg-[#C58B7A] shadow-md">
+                    Save Address
+                </button>
+            </div>
+        </div>
+    </div>
+)}
         </div>
     );
 };

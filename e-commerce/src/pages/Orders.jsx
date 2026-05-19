@@ -27,8 +27,8 @@ const Orders = () => {
 
             try {
                 const [ordersRes, addrRes] = await Promise.all([
-                    client.get('/orders/list/'),
-                    client.get('/auth/addresses/'),
+                    client.get('orders/list/'),
+                    client.get('auth/addresses/'),
                 ]);
 
                 setOrders(ordersRes.data);
@@ -49,7 +49,7 @@ const Orders = () => {
 
         setCancellingOrderId(orderNumber);
         try {
-            const res = await client.patch(`/orders/${orderNumber}/cancel/`);
+            const res = await client.patch(`orders/${orderNumber}/cancel/`);
             setOrders(orders.map(o => o.order_number === orderNumber ? res.data : o));
             toast.success('Order cancelled');
         } catch (err) {
@@ -64,7 +64,7 @@ const Orders = () => {
         if (!confirmDelete) return;
 
         try {
-            await client.delete(`/orders/${orderNumber}/delete/`);
+            await client.delete(`orders/${orderNumber}/delete/`);
             setOrders(orders.filter(o => o.order_number !== orderNumber));
             toast.success("Order deleted");
         } catch {

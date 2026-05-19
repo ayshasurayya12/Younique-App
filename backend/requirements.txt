@@ -6,3 +6,6 @@ psycopg2-binary==2.9.12
 Pillow==12.2.0
 dj-database-url==3.1.2
 python-dotenv==1.2.2
+firebase-admin==6.5.0
+django-ratelimit==4.1.0
+razorpay==1.4.1

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, UserPlus, Home } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 
 const SignUp = () => {
@@ -16,33 +15,89 @@ const SignUp = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const validateForm = () => {
-        if (!fullName || !email || !username || !password || !confirmPass) {
-            toast.error("All required fields must be filled!");
-            return false;
+    const [errors, setErrors] = useState({
+        fullName: "",
+        email: "",
+        username: "",
+        password: "",
+        confirmPass: "",
+        phone: "",
+    });
+
+    const validateField = (name, value) => {
+        let error = "";
+
+        switch (name) {
+            case "fullName":
+                if (!value.trim()) error = "Full name is required";
+                else if (value.trim().length < 2) error = "Name must be at least 2 characters";
+                break;
+            case "email":
+                if (!value.trim()) error = "Email is required";
+                else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+                    error = "Enter a valid email address";
+                break;
+            case "username":
+                if (!value.trim()) error = "Username is required";
+                else if (value.trim().length < 3) error = "Username must be at least 3 characters";
+                else if (/\s/.test(value)) error = "Username cannot contain spaces";
+                break;
+            case "password":
+                if (!value) error = "Password is required";
+                else if (value.length < 6) error = "Password must be at least 6 characters";
+                break;
+            case "confirmPass":
+                if (!value) error = "Please confirm your password";
+                else if (value !== password) error = "Passwords do not match";
+                break;
+            case "phone":
+                if (value && !/^\d{10}$/.test(value))
+                    error = "Phone must be 10 digits";
+                break;
+            default:
+                break;
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            toast.error("Please enter a valid email address");
-            return false;
+
+        setErrors(prev => ({ ...prev, [name]: error }));
+        return error;
+    };
+
+    const handleChange = (name, value) => {
+        switch (name) {
+            case "fullName": setFullName(value); break;
+            case "email": setEmail(value); break;
+            case "username": setUsername(value); break;
+            case "password": setPassword(value); break;
+            case "confirmPass": setConfirmPass(value); break;
+            case "phone": setPhone(value); break;
         }
-        if (password.length < 6) {
-            toast.error("Password must be at least 6 characters long");
-            return false;
+        validateField(name, value);
+
+        if (name === "password" && confirmPass) {
+            setErrors(prev => ({
+                ...prev,
+                confirmPass: value !== confirmPass ? "Passwords do not match" : ""
+            }));
         }
-        if (password !== confirmPass) {
-            toast.error("Passwords do not match!");
-            return false;
-        }
-        return true;
+    };
+
+    const validateAll = () => {
+        const fields = { fullName, email, username, password, confirmPass, phone };
+        let hasError = false;
+        Object.entries(fields).forEach(([name, value]) => {
+            const error = validateField(name, value);
+            if (error) hasError = true;
+        });
+        return !hasError;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateAll()) return;
         setLoading(true);
 
         try {
-            const response = await client.post('/auth/register/', {
+            const response = await client.post('auth/register/', {
                 username,
                 email,
                 password,
@@ -51,27 +106,31 @@ const SignUp = () => {
                 phone: phone || null,
             });
 
-            const data = response.data;
-
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('user', JSON.stringify({
-                id: data.user.id,
-                name: data.user.first_name || data.user.username,
-                email: data.user.email,
-                username: data.user.username,
-                role: 'user',
-                isBlocked: false,
-            }));
-
-            toast.success("Registration successful!");
-            setTimeout(() => navigate("/"), 1500);
+            toast.success(response.data.message || 'Please check your email to verify your account.');
+            setTimeout(() => navigate("/login"), 2500);
 
         } catch (error) {
-            const errors = error.response?.data;
-            if (errors) {
-                const firstError = Object.values(errors)[0];
-                toast.error(Array.isArray(firstError) ? firstError[0] : firstError);
+            const backendErrors = error.response?.data;
+            if (backendErrors && typeof backendErrors === 'object') {
+                const newErrors = { ...errors };
+                const fieldMap = {
+                    username: 'username',
+                    email: 'email',
+                    password: 'password',
+                    first_name: 'fullName',
+                    phone: 'phone',
+                };
+                Object.entries(backendErrors).forEach(([key, value]) => {
+                    const msg = Array.isArray(value) ? value[0] : value;
+                    if (key === 'non_field_errors') {
+                        toast.error(msg);
+                    } else if (fieldMap[key]) {
+                        newErrors[fieldMap[key]] = msg;
+                    } else {
+                        toast.error(msg);
+                    }
+                });
+                setErrors(newErrors);
             } else {
                 toast.error("Registration failed. Try again.");
             }
@@ -80,10 +139,20 @@ const SignUp = () => {
         }
     };
 
+    const FieldError = ({ name }) =>
+        errors[name] ? (
+            <p className="text-red-500 text-xs mt-1 ml-1">{errors[name]}</p>
+        ) : null;
+
+    const inputClass = (name) =>
+        `bg-zinc-100 p-3 rounded-md border w-full outline-none transition focus:ring-1 ${
+            errors[name]
+                ? "border-red-400 focus:border-red-400 focus:ring-red-400"
+                : "border-gray-300 focus:border-[#B37869] focus:ring-[#B37869]"
+        }`;
+
     return (
         <div className="min-h-screen flex justify-center items-center bg-zinc-100 p-4 relative">
-            <ToastContainer position="top-right" autoClose={3000} />
-
             <Link
                 to="/"
                 className="absolute top-4 left-4 flex items-center gap-2 text-[#B37869] hover:text-[#a06757] transition-colors"
@@ -93,50 +162,101 @@ const SignUp = () => {
             </Link>
 
             <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md border-t-4 border-[#B37869] mt-8">
-                <h2 className="text-3xl text-center font-semibold mb-6 text-[#B37869]">Create Account</h2>
+                <h2 className="text-3xl text-center font-semibold mb-6 text-[#B37869]">
+                    Create Account
+                </h2>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input type="text" placeholder="Full Name *" value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="bg-zinc-100 p-3 rounded-md border focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" required />
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
-                    <input type="email" placeholder="Email Address *" value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-zinc-100 p-3 rounded-md border focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" required />
-
-                    <input type="tel" placeholder="Phone Number (optional)" value={phone}
-                        onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="bg-zinc-100 p-3 rounded-md border focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" />
-
-                    <input type="text" placeholder="Create Username *" value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="bg-zinc-100 p-3 rounded-md border focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" required />
-
-                    <div className="relative">
-                        <input type={showPassword ? "text" : "password"} placeholder="Create Password *" value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="bg-zinc-100 p-3 rounded-md border w-full focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" required />
-                        <span className="absolute right-3 top-3.5 cursor-pointer text-gray-500 hover:text-[#B37869]"
-                            onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-                        </span>
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Full Name *"
+                            value={fullName}
+                            onChange={(e) => handleChange("fullName", e.target.value)}
+                            className={inputClass("fullName")}
+                        />
+                        <FieldError name="fullName" />
                     </div>
 
-                    <input type={showPassword ? "text" : "password"} placeholder="Confirm Password *" value={confirmPass}
-                        onChange={(e) => setConfirmPass(e.target.value)}
-                        className="bg-zinc-100 p-3 rounded-md border w-full focus:border-[#B37869] focus:ring-1 focus:ring-[#B37869] outline-none transition" required />
+                    <div>
+                        <input
+                            type="email"
+                            placeholder="Email Address *"
+                            value={email}
+                            onChange={(e) => handleChange("email", e.target.value)}
+                            className={inputClass("email")}
+                        />
+                        <FieldError name="email" />
+                    </div>
+
+                    <div>
+                        <input
+                            type="tel"
+                            placeholder="Phone Number (optional)"
+                            value={phone}
+                            onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                            onChange={(e) => handleChange("phone", e.target.value)}
+                            className={inputClass("phone")}
+                        />
+                        <FieldError name="phone" />
+                    </div>
+
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Create Username *"
+                            value={username}
+                            onChange={(e) => handleChange("username", e.target.value)}
+                            className={inputClass("username")}
+                        />
+                        <FieldError name="username" />
+                    </div>
+
+                    <div>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Create Password *"
+                                value={password}
+                                onChange={(e) => handleChange("password", e.target.value)}
+                                className={inputClass("password")}
+                            />
+                            <span
+                                className="absolute right-3 top-3.5 cursor-pointer text-gray-500 hover:text-[#B37869]"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                            </span>
+                        </div>
+                        <FieldError name="password" />
+                    </div>
+
+                    <div>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Confirm Password *"
+                            value={confirmPass}
+                            onChange={(e) => handleChange("confirmPass", e.target.value)}
+                            className={inputClass("confirmPass")}
+                        />
+                        <FieldError name="confirmPass" />
+                    </div>
 
                     <button
-                        className="bg-[#B37869] text-white py-3 rounded-md hover:bg-[#a06757] transition font-semibold text-lg shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        type="submit" disabled={loading}>
+                        className="bg-[#B37869] text-white py-3 rounded-md hover:bg-[#a06757] transition font-semibold text-lg shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
+                        type="submit"
+                        disabled={loading}
+                    >
                         {loading ? "Registering..." : <><UserPlus size={20} /> Sign Up</>}
                     </button>
                 </form>
 
                 <p className="text-center mt-4 text-gray-600">
                     Already have an account?{" "}
-                    <Link to="/login" className="text-[#B37869] font-medium hover:underline">Login</Link>
+                    <Link to="/login" className="text-[#B37869] font-medium hover:underline">
+                        Login
+                    </Link>
                 </p>
             </div>
         </div>

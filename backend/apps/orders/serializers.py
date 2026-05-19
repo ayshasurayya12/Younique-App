@@ -33,6 +33,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'shipping_name', 'shipping_phone', 
             'shipping_house_no', 'shipping_street', 'shipping_city', 'shipping_state', 'shipping_pincode',
             'subtotal', 'shipping_cost', 'tax', 'total',
+            'razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature',
             'created_at'
         ]
 

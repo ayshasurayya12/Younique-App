@@ -93,9 +93,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'younique_db'),
+        'USER': os.environ.get('POSTGRES_USER', 'younique_user'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'younique_pass'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+    }
 }
 
 
@@ -155,6 +160,18 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/minute',
+        'user': '200/minute',
+        'auth': '5/minute',       # login, registration, OTP login endpoints
+        'verify': '5/minute',     # email verification link endpoint
+        'checkout': '3/minute',   # order placement/checkout endpoints
+    }
 }
 
 
@@ -180,3 +197,28 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5174',
     'http://localhost:5175',
 ]
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
+    }
+}
+
+# initialize Firebase when Django starts
+from config.firebase_config import initialize_firebase
+initialize_firebase()
+
+# Razorpay settings
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder_key')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')

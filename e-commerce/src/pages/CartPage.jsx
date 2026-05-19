@@ -24,7 +24,7 @@ const CartPage = ({ refreshCartCount }) => {
             setCurrentUser(JSON.parse(userData));
 
             try {
-                const res = await client.get('/cart/');
+                const res = await client.get('cart/');
                 setCart(res.data);
             } catch {
                 toast.error("Failed to load cart");
@@ -42,7 +42,7 @@ const CartPage = ({ refreshCartCount }) => {
     const handleRemoveItem = async (cartItemId) => {
         setUpdating(true);
         try {
-            await client.delete(`/cart/${cartItemId}/remove/`);
+            await client.delete(`cart/${cartItemId}/remove/`);
             setCart(cart.filter(item => item.id !== cartItemId));
             refreshCartCount?.();
             toast.success("Item removed");
@@ -56,10 +56,10 @@ const CartPage = ({ refreshCartCount }) => {
         setUpdating(true);
         try {
             if (newQuantity <= 0) {
-                await client.delete(`/cart/${cartItemId}/remove/`);
+                await client.delete(`cart/${cartItemId}/remove/`);
                 setCart(cart.filter(item => item.id !== cartItemId));
             } else {
-                const res = await client.patch(`/cart/${cartItemId}/`, { quantity: newQuantity });
+                const res = await client.patch(`cart/${cartItemId}/`, { quantity: newQuantity });
                 setCart(cart.map(item => item.id === cartItemId ? res.data : item));
             }
             refreshCartCount?.();

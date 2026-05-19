@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -23,3 +24,15 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+class WishlistItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='wishlist_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='wishlist_items')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.title}"

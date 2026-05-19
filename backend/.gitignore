@@ -1,0 +1,19 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+
+# Database and media
+db.sqlite3
+media/
+
+# Virtual environment
+djvenv/
+venv/
+.venv/
+
+# Firebase service account
+firebase-service-account.json

@@ -24,3 +24,18 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'title', 'description', 'price', 'category', 'image', 'stock', 'is_featured', 'in_stock', 'created_at']
+
+from .models import WishlistItem
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer(read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    user_name = serializers.SerializerMethodField()
+    user_email = serializers.CharField(source='user.email', read_only=True)
+
+    class Meta:
+        model = WishlistItem
+        fields = ['id', 'user_id', 'user_name', 'user_email', 'product', 'created_at']
+
+    def get_user_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username

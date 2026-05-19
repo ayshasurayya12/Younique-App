@@ -1,7 +1,10 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
+
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
 
 const client = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL,
 });
 
 // attach token to every request automatically
@@ -17,9 +20,18 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
     (response) => response,
     async (error) => {
+        if (error.response?.status === 429) {
+            toast.error('Too many requests. Please slow down and try again in a minute!');
+            return Promise.reject(error);
+        }
+
         const original = error.config;
 
-        if (error.response?.status === 401 && !original._retry) {
+        // Don't intercept auth endpoints — let login/register/otp errors bubble up to the caller
+        const isAuthEndpoint = original.url?.includes('auth/login') || 
+                               original.url?.includes('auth/register') || 
+                               original.url?.includes('auth/otp-login');
+        if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
             original._retry = true;
 
             const refresh = localStorage.getItem('refresh_token');
@@ -30,7 +42,7 @@ client.interceptors.response.use(
             }
 
             try {
-                const res = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
+                const res = await axios.post(`${baseURL}auth/token/refresh/`, {
                     refresh,
                 });
                 localStorage.setItem('access_token', res.data.access);
