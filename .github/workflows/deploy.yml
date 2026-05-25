@@ -16,7 +16,6 @@ jobs:
             cd /var/www/younique
             git pull origin main
             echo "export const auth = null; export default null;" > e-commerce/src/firebase.js
-            sed -i 's|http://localhost:8000/api|http://54.66.53.33/api|g' e-commerce/src/api/client.js
             sed -i 's|localhost:8000|54.66.53.33|g' e-commerce/src/utils/imageHelper.js
             cd /var/www/younique/e-commerce
             npm install
