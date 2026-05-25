@@ -43,7 +43,6 @@ class AdminUserDetailView(APIView):
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
-
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
@@ -53,45 +52,32 @@ class AdminUserDetailView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=404)
 
-        # only allow updating is_blocked and is_staff
         if 'is_blocked' in request.data:
             user.is_blocked = request.data['is_blocked']
-            
-            # Send notification
-            from apps.notifications.utils import send_notification
-            status_text = "blocked" if user.is_blocked else "unblocked"
-            send_notification(
-                recipient=user,
-                title=f"Account {status_text.capitalize()}",
-                message=f"Your account has been {status_text} by the administrator.",
-                notification_type="account_status"
-            )
-
         if 'is_staff' in request.data:
             user.is_staff = request.data['is_staff']
 
         user.save()
         return Response(UserSerializer(user).data)
+
     def delete(self, request, pk):
-    try:
-        user = User.objects.get(pk=pk)
-    except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=404)
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
 
-    # prevent deleting yourself
-    if user == request.user:
-        return Response(
-            {'error': 'You cannot delete your own account'},
-            status=400
-        )
+        if user == request.user:
+            return Response(
+                {'error': 'You cannot delete your own account'},
+                status=400
+            )
 
-    # prevent deleting other admins
-    if user.is_staff:
-        return Response(
-            {'error': 'Cannot delete admin accounts'},
-            status=400
-        )
+        if user.is_staff:
+            return Response(
+                {'error': 'Cannot delete admin accounts'},
+                status=400
+            )
 
-    username = user.username
-    user.delete()
-    return Response({'message': f'User {username} deleted successfully'})
+        username = user.username
+        user.delete()
+        return Response({'message': f'User {username} deleted successfully'})
