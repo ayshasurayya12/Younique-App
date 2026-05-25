@@ -70,7 +70,8 @@ export const NotificationProvider = ({ children }) => {
         disconnectWebSocket();
 
         try {
-            const ws = new WebSocket(`ws://localhost:8000/ws/notifications/?token=${token}`);
+            const wsBase = import.meta.env.VITE_WS_URL || 'wss://younique.duckdns.org/ws/';
+            const ws = new WebSocket(`${wsBase}notifications/?token=${token}`);
             wsRef.current = ws;
 
             ws.onopen = () => {
