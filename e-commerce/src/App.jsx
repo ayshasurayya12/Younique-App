@@ -35,6 +35,7 @@ import Wishlist from './pages/Wishlist'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AdminOffers from './pages/Admin/Offers'
+import VerifyEmail from './pages/VerifyEmail';
 
 const AppContent = () => {
   const location = useLocation();
@@ -89,6 +90,7 @@ const AppContent = () => {
         <Route path='/not-authorized' element={<NotAuthorized/>}/>
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
         <Route path='/reset-password/:token' element={<ResetPassword/>}/>
+        <Route path='/verify-email/:token' element={<VerifyEmail />} />
 
         {/* public routes — admin redirected to /admin */}
         <Route path='/' element={
