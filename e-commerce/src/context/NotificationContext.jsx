@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import api from '../api/Client';
+import api from '../api/client';
 
 const defaultValue = {
     notifications: [],
