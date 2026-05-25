@@ -9,20 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install and Build React
-        working-directory: e-commerce
-        run: |
-          npm install
-          npm run build
-
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -33,13 +19,9 @@ jobs:
             cd /var/www/younique
             git pull origin main
 
-            mv e-commerce/src/api/Client.js e-commerce/src/api/client.js 2>/dev/null || true
-            mv e-commerce/src/utils/ImageHelper.js e-commerce/src/utils/imageHelper.js 2>/dev/null || true
-
-            sed -i 's|http://localhost:8000/api|http://54.66.53.33/api|g' e-commerce/src/api/client.js
-            sed -i 's|http://localhost:8000|http://54.66.53.33|g' e-commerce/src/utils/imageHelper.js
-
             echo "export const auth = null; export default null;" > e-commerce/src/firebase.js
+            sed -i 's|http://localhost:8000/api|http://54.66.53.33/api|g' e-commerce/src/api/client.js
+            sed -i 's|localhost:8000|54.66.53.33|g' e-commerce/src/utils/imageHelper.js
 
             cd /var/www/younique/e-commerce
             npm install
