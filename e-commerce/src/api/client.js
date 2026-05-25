@@ -1,9 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const client = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-});
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 const client = axios.create({
     baseURL,
@@ -29,10 +27,10 @@ client.interceptors.response.use(
 
         const original = error.config;
 
-        // Don't intercept auth endpoints — let login/register/otp errors bubble up to the caller
         const isAuthEndpoint = original.url?.includes('auth/login') || 
                                original.url?.includes('auth/register') || 
                                original.url?.includes('auth/otp-login');
+
         if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
             original._retry = true;
 
@@ -44,7 +42,7 @@ client.interceptors.response.use(
             }
 
             try {
-                const res = await axios.post(`${baseURL}auth/token/refresh/`, {
+                const res = await axios.post(`${baseURL}/auth/token/refresh/`, {
                     refresh,
                 });
                 localStorage.setItem('access_token', res.data.access);
