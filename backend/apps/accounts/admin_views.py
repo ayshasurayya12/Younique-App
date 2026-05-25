@@ -72,3 +72,26 @@ class AdminUserDetailView(APIView):
 
         user.save()
         return Response(UserSerializer(user).data)
+    def delete(self, request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+
+    # prevent deleting yourself
+    if user == request.user:
+        return Response(
+            {'error': 'You cannot delete your own account'},
+            status=400
+        )
+
+    # prevent deleting other admins
+    if user.is_staff:
+        return Response(
+            {'error': 'Cannot delete admin accounts'},
+            status=400
+        )
+
+    username = user.username
+    user.delete()
+    return Response({'message': f'User {username} deleted successfully'})

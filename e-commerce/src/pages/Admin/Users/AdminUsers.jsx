@@ -14,19 +14,26 @@ const AdminUsers = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [hasNext, setHasNext] = useState(false);
     const [hasPrevious, setHasPrevious] = useState(false);
+
     const PAGE_SIZE = 8;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     const loadUsers = async () => {
         setLoading(true);
+
         try {
             const params = new URLSearchParams();
-            params.append('page', currentPage);
-            if (searchQuery) params.append('search', searchQuery);
 
-            const res = await client.get(`/auth/admin/users/?${params.toString()}`);
-            
-            // Django paginated response format
+            params.append("page", currentPage);
+
+            if (searchQuery) {
+                params.append("search", searchQuery);
+            }
+
+            const res = await client.get(
+                `/auth/admin/users/?${params.toString()}`
+            );
+
             setUsers(res.data.results || []);
             setTotalCount(res.data.count || 0);
             setHasNext(!!res.data.next);
@@ -42,7 +49,7 @@ const AdminUsers = () => {
         loadUsers();
     }, [currentPage]);
 
-    // Delay search request to prevent too many API requests on typing
+    // debounce search
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             setCurrentPage(1);
@@ -54,53 +61,100 @@ const AdminUsers = () => {
 
     const toggleBlock = async (userId, currentStatus) => {
         const action = currentStatus ? "Unblock" : "Block";
+
         if (!window.confirm(`${action} this user?`)) return;
 
         try {
             await client.patch(`/auth/admin/users/${userId}/`, {
-                is_blocked: !currentStatus
+                is_blocked: !currentStatus,
             });
+
             toast.success(`User ${action.toLowerCase()}ed`);
-            // Reload the list
+
             loadUsers();
         } catch {
             toast.error(`Failed to ${action.toLowerCase()} user`);
         }
     };
 
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    // DELETE USER
+    const deleteUser = async (userId, username) => {
+        if (
+            !window.confirm(
+                `Permanently delete user "${username}"? This cannot be undone.`
+            )
+        )
+            return;
+
+        try {
+            await client.delete(`/auth/admin/users/${userId}/`);
+
+            toast.success(`User "${username}" deleted`);
+
+            // instantly remove user from UI
+            setUsers((prev) => prev.filter((u) => u.id !== userId));
+        } catch {
+            toast.error("Failed to delete user");
+        }
     };
 
-    // generate page numbers to show
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
     const getPageNumbers = () => {
         const pages = [];
         const maxVisible = 5;
 
         if (totalPages <= maxVisible) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
         } else {
             if (currentPage <= 3) {
-                pages.push(1, 2, 3, 4, '...', totalPages);
+                pages.push(1, 2, 3, 4, "...", totalPages);
             } else if (currentPage >= totalPages - 2) {
-                pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                pages.push(
+                    1,
+                    "...",
+                    totalPages - 3,
+                    totalPages - 2,
+                    totalPages - 1,
+                    totalPages
+                );
             } else {
-                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+                pages.push(
+                    1,
+                    "...",
+                    currentPage - 1,
+                    currentPage,
+                    currentPage + 1,
+                    "...",
+                    totalPages
+                );
             }
         }
+
         return pages;
     };
 
     return (
         <div className="w-full">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                <h1 className="text-2xl font-bold text-[#B37869]">Manage Users</h1>
+                <h1 className="text-2xl font-bold text-[#B37869]">
+                    Manage Users
+                </h1>
+
                 <input
                     type="text"
                     placeholder="Search by name, email, username..."
                     value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="px-3 py-2 border rounded-lg shadow-sm text-sm w-full md:w-72"
                 />
             </div>
@@ -122,29 +176,68 @@ const AdminUsers = () => {
                                     <th className="p-3">Role</th>
                                     <th className="p-3">Status</th>
                                     <th className="p-3">Joined</th>
-                                    <th className="p-3 text-center">Actions</th>
+                                    <th className="p-3 text-center">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
+
                             <tbody>
-                                {users.map(user => (
-                                    <tr key={user.id} className="border-b hover:bg-gray-50 transition">
-                                        <td className="p-3 text-gray-500">#{user.id}</td>
-                                        <td className="p-3 font-medium">{user.first_name || '—'}</td>
-                                        <td className="p-3">@{user.username}</td>
-                                        <td className="p-3">{user.email}</td>
-                                        <td className="p-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.is_staff ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                {user.is_staff ? 'Admin' : 'User'}
-                                            </span>
-                                        </td>
-                                        <td className="p-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.is_blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                                {user.is_blocked ? 'Blocked' : 'Active'}
-                                            </span>
-                                        </td>
+                                {users.map((user) => (
+                                    <tr
+                                        key={user.id}
+                                        className="border-b hover:bg-gray-50 transition"
+                                    >
                                         <td className="p-3 text-gray-500">
-                                            {new Date(user.date_joined).toLocaleDateString()}
+                                            #{user.id}
                                         </td>
+
+                                        <td className="p-3 font-medium">
+                                            {user.first_name || "—"}
+                                        </td>
+
+                                        <td className="p-3">
+                                            @{user.username}
+                                        </td>
+
+                                        <td className="p-3">
+                                            {user.email}
+                                        </td>
+
+                                        <td className="p-3">
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                    user.is_staff
+                                                        ? "bg-purple-100 text-purple-700"
+                                                        : "bg-blue-100 text-blue-700"
+                                                }`}
+                                            >
+                                                {user.is_staff
+                                                    ? "Admin"
+                                                    : "User"}
+                                            </span>
+                                        </td>
+
+                                        <td className="p-3">
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                    user.is_blocked
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-green-100 text-green-700"
+                                                }`}
+                                            >
+                                                {user.is_blocked
+                                                    ? "Blocked"
+                                                    : "Active"}
+                                            </span>
+                                        </td>
+
+                                        <td className="p-3 text-gray-500">
+                                            {new Date(
+                                                user.date_joined
+                                            ).toLocaleDateString()}
+                                        </td>
+
                                         <td className="p-3">
                                             <div className="flex items-center justify-center gap-3">
                                                 <Link
@@ -153,30 +246,62 @@ const AdminUsers = () => {
                                                 >
                                                     View
                                                 </Link>
+
                                                 <button
-                                                    onClick={() => toggleBlock(user.id, user.is_blocked)}
-                                                    className={`text-sm font-medium hover:underline ${user.is_blocked ? 'text-green-600' : 'text-red-600'}`}
+                                                    onClick={() =>
+                                                        toggleBlock(
+                                                            user.id,
+                                                            user.is_blocked
+                                                        )
+                                                    }
+                                                    className={`text-sm font-medium hover:underline ${
+                                                        user.is_blocked
+                                                            ? "text-green-600"
+                                                            : "text-red-600"
+                                                    }`}
                                                 >
-                                                    {user.is_blocked ? 'Unblock' : 'Block'}
+                                                    {user.is_blocked
+                                                        ? "Unblock"
+                                                        : "Block"}
+                                                </button>
+
+                                                <button
+                                                    onClick={() =>
+                                                        deleteUser(
+                                                            user.id,
+                                                            user.username
+                                                        )
+                                                    }
+                                                    className="text-gray-500 hover:text-red-700 text-sm font-medium hover:underline"
+                                                >
+                                                    Delete
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                 ))}
+
                                 {users.length === 0 && (
                                     <tr>
-                                        <td colSpan="8" className="text-center py-6 text-gray-500">No users found.</td>
+                                        <td
+                                            colSpan="8"
+                                            className="text-center py-6 text-gray-500"
+                                        >
+                                            No users found.
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* pagination controls */}
+                    {/* pagination */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-2 mt-6">
                             <button
-                                onClick={() => handlePageChange(currentPage - 1)}
+                                onClick={() =>
+                                    handlePageChange(currentPage - 1)
+                                }
                                 disabled={!hasPrevious}
                                 className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm"
                             >
@@ -186,16 +311,23 @@ const AdminUsers = () => {
 
                             <div className="flex items-center gap-1">
                                 {getPageNumbers().map((page, index) =>
-                                    page === '...' ? (
-                                        <span key={`dots-${index}`} className="px-3 py-2 text-gray-400 text-sm">...</span>
+                                    page === "..." ? (
+                                        <span
+                                            key={`dots-${index}`}
+                                            className="px-3 py-2 text-gray-400 text-sm"
+                                        >
+                                            ...
+                                        </span>
                                     ) : (
                                         <button
                                             key={page}
-                                            onClick={() => handlePageChange(page)}
+                                            onClick={() =>
+                                                handlePageChange(page)
+                                            }
                                             className={`w-9 h-9 rounded-lg font-medium transition text-sm ${
                                                 currentPage === page
-                                                    ? 'bg-[#B37869] text-white shadow-md'
-                                                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                                                    ? "bg-[#B37869] text-white shadow-md"
+                                                    : "border border-gray-300 text-gray-600 hover:bg-gray-50"
                                             }`}
                                         >
                                             {page}
@@ -205,7 +337,9 @@ const AdminUsers = () => {
                             </div>
 
                             <button
-                                onClick={() => handlePageChange(currentPage + 1)}
+                                onClick={() =>
+                                    handlePageChange(currentPage + 1)
+                                }
                                 disabled={!hasNext}
                                 className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-sm"
                             >
