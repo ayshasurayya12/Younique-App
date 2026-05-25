@@ -1,0 +1,55 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install and Build React
+        working-directory: e-commerce
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            cd /var/www/younique
+            git pull origin main
+
+            mv e-commerce/src/api/Client.js e-commerce/src/api/client.js 2>/dev/null || true
+            mv e-commerce/src/utils/ImageHelper.js e-commerce/src/utils/imageHelper.js 2>/dev/null || true
+
+            sed -i 's|http://localhost:8000/api|http://54.66.53.33/api|g' e-commerce/src/api/client.js
+            sed -i 's|http://localhost:8000|http://54.66.53.33|g' e-commerce/src/utils/imageHelper.js
+
+            echo "export const auth = null; export default null;" > e-commerce/src/firebase.js
+
+            cd /var/www/younique/e-commerce
+            npm install
+            npm run build
+
+            cd /var/www/younique/backend
+            source venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py migrate
+            python manage.py collectstatic --noinput
+
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
