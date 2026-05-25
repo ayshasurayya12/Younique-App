@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from apps.products.models import Product
 from .models import CartItem, Order, OrderItem
+from apps.notifications.utils import send_notification, send_admin_notification
 from .serializers import (
     CartItemSerializer, AddToCartSerializer,
     OrderSerializer, PlaceOrderSerializer
@@ -246,6 +247,21 @@ class PlaceOrderView(APIView):
         if payment_method == 'Razorpay':
             from django.conf import settings
             response_data['razorpay_key_id'] = settings.RAZORPAY_KEY_ID
+        else:
+            # For COD or other methods, order is successfully placed immediately
+            send_notification(
+                recipient=request.user,
+                title="Order Placed Successfully",
+                message=f"Your order #{order_number} has been placed successfully.",
+                notification_type="order_placed",
+                related_link=f"/order-confirmation/{order_number}"
+            )
+            send_admin_notification(
+                title="New Order",
+                message=f"A new order #{order_number} has been placed by {request.user.email}.",
+                notification_type="order_placed",
+                related_link=f"/admin/orders/{order_number}"
+            )
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -298,6 +314,20 @@ class CancelOrderView(APIView):
         order.status = Order.Status.CANCELLED
         order.save()
 
+        send_notification(
+            recipient=request.user,
+            title="Order Cancelled",
+            message=f"Your order #{order_number} has been cancelled.",
+            notification_type="order_cancelled",
+            related_link=f"/order-confirmation/{order_number}"
+        )
+        send_admin_notification(
+            title="Order Cancelled",
+            message=f"Order #{order_number} was cancelled by {request.user.email}.",
+            notification_type="order_cancelled",
+            related_link=f"/admin/orders/{order_number}"
+        )
+
         return Response(OrderSerializer(order).data)
 
 
@@ -317,6 +347,13 @@ class DeleteOrderView(APIView):
             )
 
         order.delete()
+
+        send_admin_notification(
+            title="Order Deleted",
+            message=f"Order #{order_number} was permanently deleted by {request.user.email or request.user.username}.",
+            notification_type="order_cancelled",
+        )
+
         return Response({'message': 'Order deleted'}, status=status.HTTP_200_OK)
 
 
@@ -361,6 +398,20 @@ class VerifyRazorpayPaymentView(APIView):
             order.razorpay_payment_id = razorpay_payment_id
             order.razorpay_signature = razorpay_signature
             order.save()
+
+            send_notification(
+                recipient=request.user,
+                title="Payment Successful",
+                message=f"Payment for order #{order_number} was successful.",
+                notification_type="payment_success",
+                related_link=f"/order-confirmation/{order_number}"
+            )
+            send_admin_notification(
+                title="New Order (Paid)",
+                message=f"Order #{order_number} has been placed and paid by {request.user.email}.",
+                notification_type="order_placed",
+                related_link=f"/admin/orders/{order_number}"
+            )
 
             return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 

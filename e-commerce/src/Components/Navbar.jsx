@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/imgs/logo.png';
 import client from '../api/client';
 import { useWishlist } from '../context/WishlistContext';
+import NotificationBell from './NotificationBell';
 
 const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
     const location = useLocation();
@@ -60,7 +61,8 @@ const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
         }
     };
 
-    if (hideNavbar) return null;
+    const isAdminPage = location.pathname.startsWith('/admin');
+if (hideNavbar || isAdminPage) return null;
 
     return (
         <header className="bg-white shadow-md sticky top-0 z-50 w-full">
@@ -133,6 +135,9 @@ const Navbar = ({ searchQuery, setSearchQuery, cartRefreshTrigger }) => {
                                 <Package size={28} className="text-gray-700 hover:text-[#C58B7A]" />
                             </Link>
                         )}
+
+                        {/* notifications icon */}
+                        {isLoggedIn && <NotificationBell />}
 
                         {/* user icon */}
                         <div className="relative">

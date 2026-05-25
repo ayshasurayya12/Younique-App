@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { LogOut } from "lucide-react";
+import NotificationBell from "../../Components/NotificationBell";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -13,6 +14,8 @@ export default function AdminLayout() {
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    // Notify NotificationContext (storage event only fires in other tabs)
+    window.dispatchEvent(new CustomEvent('auth:logout'));
     toast.success('Logged out successfully');
     navigate('/login');
   };
@@ -26,14 +29,17 @@ export default function AdminLayout() {
         p-6 flex flex-col
         md:min-h-screen
       ">
-        <h1 className="text-2xl font-bold text-[#B37869] mb-10 tracking-wide text-center md:text-left">
-          Admin Panel
-        </h1>
+        <div className="flex items-center justify-between mb-10">
+          <h1 className="text-2xl font-bold text-[#B37869] tracking-wide text-center md:text-left">
+            Admin Panel
+          </h1>
+          <NotificationBell />
+        </div>
 
         <nav className="flex flex-col gap-4 text-center md:text-left">
           <Link
             className={`px-4 py-2 rounded-lg font-medium transition ${
-              isActive("/admin") && !isActive("/admin/products") && !isActive("/admin/users") && !isActive("/admin/orders")
+              isActive("/admin") && !isActive("/admin/products") && !isActive("/admin/users") && !isActive("/admin/orders") && !isActive("/admin/wishlists") && !isActive("/admin/offers")
                 ? "bg-[#B37869] text-white shadow"
                 : "text-gray-700 hover:bg-[#F2E8E6] hover:text-[#B37869]"
             }`}
@@ -85,6 +91,17 @@ export default function AdminLayout() {
           >
             Wishlists
           </Link>
+
+          <Link
+  className={`px-4 py-2 rounded-lg font-medium transition ${
+    isActive("/admin/offers")
+      ? "bg-[#B37869] text-white shadow"
+      : "text-gray-700 hover:bg-[#F2E8E6] hover:text-[#B37869]"
+  }`}
+  to="/admin/offers"
+>
+  Offers
+</Link>
         </nav>
 
         {/* bottom section */}

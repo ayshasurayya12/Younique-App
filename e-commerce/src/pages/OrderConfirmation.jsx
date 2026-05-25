@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle, Package, Truck, Home, ShoppingBag, XCircle, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 import client from '../api/client';
 import { getImageSrc } from '../utils/imageHelper';
 

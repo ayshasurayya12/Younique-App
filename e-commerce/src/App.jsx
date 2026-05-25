@@ -24,6 +24,7 @@ import AdminUsers from './pages/Admin/Users/AdminUsers'
 import UserDetails from './pages/Admin/Users/UserDetails'
 import AdminRoute from './Routes/AdminRoutes'
 import UserRoute from './Routes/UserRoute'
+import AdminRedirect from './Routes/AdminRedirect'
 import NotAuthorized from './pages/Admin/NotAuthorized'
 import AdminOrders from './pages/Orders/AdminOrders'
 import AdminOrderDetails from './pages/Orders/AdminOrderDetails'
@@ -31,6 +32,9 @@ import ScrollToTop from './ScrollToTop'
 import OTPLogin from './pages/OTPLogin'
 import AdminWishlist from './pages/Admin/Wishlist/AdminWishlist'
 import Wishlist from './pages/Wishlist'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import AdminOffers from './pages/Admin/Offers'
 
 const AppContent = () => {
   const location = useLocation();
@@ -39,7 +43,6 @@ const AppContent = () => {
   const [, setUser] = useState(null)
   const [cartRefreshTrigger, setCartRefreshTrigger] = useState(0)
 
-  // hide navbar and footer on admin pages
   const isAdminPage = location.pathname.startsWith('/admin');
 
   const refreshCartCount = () => {
@@ -68,7 +71,6 @@ const AppContent = () => {
     <div>
       <Toaster position="top-right" reverseOrder={false} /> 
       
-      {/* hide navbar on admin pages */}
       {!isAdminPage && (
         <Navbar 
           searchQuery={searchQuery}
@@ -80,18 +82,42 @@ const AppContent = () => {
       <ScrollToTop/>
       
       <Routes>
-        {/* public routes */}
-        <Route path='/about' element={<About/>}/>
-        <Route path='/contact' element={<Contact/>}/>
-        <Route path='/not-authorized' element={<NotAuthorized/>}/>
+        {/* auth routes — no redirect needed */}
         <Route path='/login' element={<Login handleLogin={handleLogin} refreshCartCount={refreshCartCount}/>}/>
         <Route path='/signup' element={<SignUp/>}/>
         <Route path='/otp-login' element={<OTPLogin handleLogin={handleLogin}/>}/>
-        <Route path='/' element={<Home searchQuery={searchQuery} handleAddToCart={handleAddToCart}/>}/>
-        <Route path='/allproducts' element={<AllProducts searchQuery={searchQuery} handleAddToCart={handleAddToCart}/>}/>
-        <Route path='/product/:id' element={<ProductDetails handleAddToCart={handleAddToCart} refreshCartCount={refreshCartCount}/>}/>
+        <Route path='/not-authorized' element={<NotAuthorized/>}/>
+        <Route path='/forgot-password' element={<ForgotPassword/>}/>
+        <Route path='/reset-password/:token' element={<ResetPassword/>}/>
 
-        {/* user only routes */}
+        {/* public routes — admin redirected to /admin */}
+        <Route path='/' element={
+          <AdminRedirect>
+            <Home searchQuery={searchQuery} handleAddToCart={handleAddToCart}/>
+          </AdminRedirect>
+        }/>
+        <Route path='/about' element={
+          <AdminRedirect>
+            <About/>
+          </AdminRedirect>
+        }/>
+        <Route path='/contact' element={
+          <AdminRedirect>
+            <Contact/>
+          </AdminRedirect>
+        }/>
+        <Route path='/allproducts' element={
+          <AdminRedirect>
+            <AllProducts searchQuery={searchQuery} handleAddToCart={handleAddToCart}/>
+          </AdminRedirect>
+        }/>
+        <Route path='/product/:id' element={
+          <AdminRedirect>
+            <ProductDetails handleAddToCart={handleAddToCart} refreshCartCount={refreshCartCount}/>
+          </AdminRedirect>
+        }/>
+
+        {/* user only routes — admin redirected, guests to login */}
         <Route path='/cart' element={
           <UserRoute>
             <CartPage cart={cart} setCart={setCart} refreshCartCount={refreshCartCount}/>
@@ -138,10 +164,10 @@ const AppContent = () => {
           <Route path='orders' element={<AdminOrders/>}/>
           <Route path='orders/:id' element={<AdminOrderDetails/>}/>
           <Route path='wishlists' element={<AdminWishlist/>}/>
+          <Route path='offers' element={<AdminOffers/>}/>
         </Route>
       </Routes>
 
-      {/* hide footer on admin pages */}
       {!isAdminPage && <Footer/>}
     </div>
   )

@@ -133,6 +133,8 @@ const OTPLogin = ({ handleLogin }) => {
             }));
 
             if (handleLogin) handleLogin(data.user);
+            // Notify NotificationContext to fetch & connect WS (storage event only fires in other tabs)
+            window.dispatchEvent(new CustomEvent('auth:login', { detail: { token: data.access } }));
 
             if (data.is_new_user) {
                 toast.success('Account created! Welcome 🎉');

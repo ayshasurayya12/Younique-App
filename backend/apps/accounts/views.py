@@ -131,6 +131,14 @@ class VerifyEmailView(APIView):
                 user.is_active = True
                 user.is_email_verified = True
                 user.save()
+                
+                from apps.notifications.utils import send_admin_notification
+                send_admin_notification(
+                    title="New User Registered",
+                    message=f"A new user {user.email} has registered and verified their email.",
+                    notification_type="new_user",
+                    related_link=f"/admin/users/{user.id}"
+                )
             
             # We can keep the token for a bit longer to handle double-clicks/React StrictMode
             # It will expire automatically based on the timeout set in RegisterView
@@ -178,6 +186,15 @@ class FirebaseOTPLoginView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
+            if created:
+                from apps.notifications.utils import send_admin_notification
+                send_admin_notification(
+                    title="New User Registered",
+                    message=f"A new user has registered via phone {user.phone}.",
+                    notification_type="new_user",
+                    related_link=f"/admin/users/{user.id}"
+                )
+
             # return JWT tokens same as normal login
             tokens = get_tokens_for_user(user)
             return Response({
@@ -201,3 +218,68 @@ class FirebaseOTPLoginView(APIView):
                 {'error': str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+    throttle_scope = 'auth'
+
+    def post(self, request):
+        email = request.data.get('email', '').strip()
+        if not email:
+            return Response({'error': 'Email is required'}, status=400)
+
+        user = User.objects.filter(email=email).first()
+
+        # always return success to prevent email enumeration
+        if not user:
+            return Response({'message': 'If this email exists, a reset link has been sent.'})
+
+        token = secrets.token_urlsafe(32)
+        cache.set(f'pwd_reset_{token}', user.id, timeout=3600)  # 1 hour
+
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
+
+        send_mail(
+            subject='Reset your Younique password',
+            message=f'Click the link to reset your password:\n\n{reset_url}\n\nThis link expires in 1 hour.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return Response({'message': 'If this email exists, a reset link has been sent.'})
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token', '').strip()
+        password = request.data.get('password', '')
+        password2 = request.data.get('password2', '')
+
+        if not token:
+            return Response({'error': 'Token is required'}, status=400)
+        if not password:
+            return Response({'error': 'Password is required'}, status=400)
+        if len(password) < 6:
+            return Response({'error': 'Password must be at least 6 characters'}, status=400)
+        if password != password2:
+            return Response({'error': 'Passwords do not match'}, status=400)
+
+        user_id = cache.get(f'pwd_reset_{token}')
+        if not user_id:
+            return Response({'error': 'Invalid or expired reset link'}, status=400)
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        user.set_password(password)
+        user.save()
+        cache.delete(f'pwd_reset_{token}')
+
+        return Response({'message': 'Password reset successful. You can now login.'})

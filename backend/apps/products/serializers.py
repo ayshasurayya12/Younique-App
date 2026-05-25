@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Product
+from .models import Category, Product, WishlistItem
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -17,15 +17,19 @@ class ProductListSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'price', 'category', 'image', 'stock', 'is_featured', 'in_stock']
 
 
+class OriginalPriceSerializer(serializers.Serializer):
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     in_stock = serializers.BooleanField(read_only=True)
+    original_price = OriginalPriceSerializer(read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'description', 'price', 'category', 'image', 'stock', 'is_featured', 'in_stock', 'created_at']
+        fields = ['id', 'title', 'description', 'price', 'category', 'image', 'stock', 'is_featured', 'in_stock', 'created_at', 'original_price']
 
-from .models import WishlistItem
 
 class WishlistItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)

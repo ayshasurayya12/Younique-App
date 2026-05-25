@@ -65,6 +65,8 @@ const Profile = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    // Notify NotificationContext (storage event only fires in other tabs)
+    window.dispatchEvent(new CustomEvent('auth:logout'));
     toast.success('Logged out successfully');
     navigate('/');
   };

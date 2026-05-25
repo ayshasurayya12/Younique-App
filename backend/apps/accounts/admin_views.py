@@ -56,6 +56,17 @@ class AdminUserDetailView(APIView):
         # only allow updating is_blocked and is_staff
         if 'is_blocked' in request.data:
             user.is_blocked = request.data['is_blocked']
+            
+            # Send notification
+            from apps.notifications.utils import send_notification
+            status_text = "blocked" if user.is_blocked else "unblocked"
+            send_notification(
+                recipient=user,
+                title=f"Account {status_text.capitalize()}",
+                message=f"Your account has been {status_text} by the administrator.",
+                notification_type="account_status"
+            )
+
         if 'is_staff' in request.data:
             user.is_staff = request.data['is_staff']
 

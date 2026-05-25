@@ -9,6 +9,7 @@ from .models import Order, OrderItem
 from .serializers import OrderSerializer
 from apps.accounts.models import User
 from apps.products.models import Product
+from apps.notifications.utils import send_notification, send_admin_notification
 
 class OrderPagination(PageNumberPagination):
     page_size = 8
@@ -169,6 +170,23 @@ class AdminOrderDetailView(APIView):
         order.status = new_status
         order.save()
 
+        # Notify the customer
+        send_notification(
+            recipient=order.user,
+            title="Order Status Updated",
+            message=f"Your order #{order_number} is now {new_status}.",
+            notification_type="order_status",
+            related_link=f"/order-confirmation/{order_number}"
+        )
+
+        # Notify all admins so the admin panel bell updates
+        send_admin_notification(
+            title="Order Status Changed",
+            message=f"Order #{order_number} has been updated to '{new_status}' by {request.user.email}.",
+            notification_type="order_status",
+            related_link=f"/admin/orders/{order_number}"
+        )
+
         data = OrderSerializer(order).data
         data['user_name'] = order.user.get_full_name() or order.user.username
         return Response(data)
@@ -179,5 +197,15 @@ class AdminOrderDetailView(APIView):
         except Order.DoesNotExist:
             return Response({'error': 'Order not found'}, status=404)
 
+        user = order.user
         order.delete()
+
+        # Notify the customer that their order was removed
+        send_notification(
+            recipient=user,
+            title="Order Removed",
+            message=f"Your order #{order_number} has been removed by an administrator.",
+            notification_type="order_cancelled",
+        )
+
         return Response({'message': 'Order deleted'})

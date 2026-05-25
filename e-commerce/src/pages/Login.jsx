@@ -49,6 +49,8 @@ const Login = ({ handleLogin }) => {
             }));
 
             if (handleLogin) handleLogin(data.user);
+            // Notify NotificationContext to fetch & connect WS (storage event only fires in other tabs)
+            window.dispatchEvent(new CustomEvent('auth:login', { detail: { token: data.access } }));
             toast.success('Login successful!');
 
             setTimeout(() => {
@@ -123,6 +125,7 @@ const Login = ({ handleLogin }) => {
                             <p className="text-red-500 text-xs mt-1 ml-1">{errors.password}</p>
                         )}
                     </div>
+                    
 
                     <button
                         className="bg-[#B37869] text-white py-3 rounded-md hover:bg-[#a06757] transition font-semibold text-lg shadow-md flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -137,6 +140,11 @@ const Login = ({ handleLogin }) => {
                         ) : <LogIn size={20} />}
                         {loading ? 'Logging in...' : 'Log In'}
                     </button>
+                    <div className="text-right -mt-2">
+    <Link to="/forgot-password" className="text-sm text-[#B37869] hover:underline">
+        Forgot Password?
+    </Link>
+</div>
                     <div className="text-center">
     <span className="text-gray-500 text-sm">or </span>
     <Link to="/otp-login" className="text-[#B37869] text-sm font-medium hover:underline">

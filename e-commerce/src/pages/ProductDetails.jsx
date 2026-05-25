@@ -220,10 +220,30 @@ function ProductDetails({ refreshCartCount }) {
                                 </h1>
 
                                 {/* Price */}
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-3xl font-extrabold text-green-700">₹{product.price}</span>
-                                    <span className="text-sm text-gray-400">incl. all taxes</span>
-                                </div>
+                                {/* Price */}
+<div className="flex flex-col gap-1">
+    {product.original_price ? (
+        <>
+            <div className="flex items-center gap-2">
+                <span className="text-3xl font-extrabold text-green-700">
+                    ₹{product.price}
+                </span>
+                <span className="text-lg text-gray-400 line-through">
+                    ₹{product.original_price.price}
+                </span>
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                    {Math.round((1 - product.price / product.original_price.price) * 100)}% OFF
+                </span>
+            </div>
+            <span className="text-sm text-gray-400">incl. all taxes</span>
+        </>
+    ) : (
+        <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-green-700">₹{product.price}</span>
+            <span className="text-sm text-gray-400">incl. all taxes</span>
+        </div>
+    )}
+</div>
 
                                 {/* Stock */}
                                 <StockBadge />
