@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
-
-const API = "http://localhost:8000/api";
-
-const getAuthHeaders = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-});
+import client from '../api/client';
 
 export default function AdminOffers() {
   const [offers, setOffers] = useState([]);
@@ -28,7 +22,7 @@ export default function AdminOffers() {
 
   const fetchOffers = async () => {
     try {
-      const res = await axios.get(`${API}/admin/offers/`, getAuthHeaders());
+      const res = await client.get('admin/offers/');
       setOffers(res.data);
     } catch {
       toast.error("Failed to fetch offers");
@@ -38,13 +32,21 @@ export default function AdminOffers() {
   };
 
   const fetchProducts = async () => {
-    const res = await axios.get(`${API}/products/`, getAuthHeaders());
-    setProducts(res.data.results || res.data);
+    try {
+      const res = await client.get('products/');
+      setProducts(res.data.results || res.data);
+    } catch {
+      toast.error("Failed to fetch products");
+    }
   };
 
   const fetchCategories = async () => {
-    const res = await axios.get(`${API}/categories/`, getAuthHeaders());
-    setCategories(res.data.results || res.data);
+    try {
+      const res = await client.get('categories/');
+      setCategories(res.data.results || res.data);
+    } catch {
+      toast.error("Failed to fetch categories");
+    }
   };
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function AdminOffers() {
         product: form.target === "product" ? form.product : null,
         category: form.target === "category" ? form.category : null,
       };
-      await axios.post(`${API}/admin/offers/`, payload, getAuthHeaders());
+      await client.post('admin/offers/', payload);
       toast.success("Offer created!");
       setShowForm(false);
       setForm({
@@ -77,7 +79,7 @@ export default function AdminOffers() {
 
   const handleToggle = async (id) => {
     try {
-      const res = await axios.patch(`${API}/admin/offers/${id}/toggle/`, {}, getAuthHeaders());
+      const res = await client.patch(`admin/offers/${id}/toggle/`, {});
       toast.success(res.data.message);
       fetchOffers();
     } catch {
@@ -88,7 +90,7 @@ export default function AdminOffers() {
   const handleDelete = async (id) => {
     if (!confirm("Delete this offer?")) return;
     try {
-      await axios.delete(`${API}/admin/offers/${id}/`, getAuthHeaders());
+      await client.delete(`admin/offers/${id}/`);
       toast.success("Offer deleted");
       fetchOffers();
     } catch {
@@ -98,7 +100,7 @@ export default function AdminOffers() {
 
   const handleRunNow = async () => {
     try {
-      await axios.post(`${API}/admin/offers/run-now/`, {}, getAuthHeaders());
+      await client.post('admin/offers/run-now/', {});
       toast.success("Offer processing triggered!");
       setTimeout(fetchOffers, 2000);
     } catch {
