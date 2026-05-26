@@ -59,10 +59,12 @@ export default function AdminOffers() {
     e.preventDefault();
     try {
       const payload = {
-        ...form,
-        product: form.target === "product" ? form.product : null,
-        category: form.target === "category" ? form.category : null,
-      };
+    ...form,
+    product: form.target === "product" ? form.product : null,
+    category: form.target === "category" ? form.category : null,
+    start_date: new Date(form.start_date).toISOString(),
+    end_date: new Date(form.end_date).toISOString(),
+};
       await client.post('admin/offers/', payload);
       toast.success("Offer created!");
       setShowForm(false);
