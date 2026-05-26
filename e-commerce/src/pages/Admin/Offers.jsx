@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import client from '../api/client';
+import client from '../../api/client';
 
 export default function AdminOffers() {
   const [offers, setOffers] = useState([]);
