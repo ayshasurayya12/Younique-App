@@ -12,36 +12,40 @@ export const WishlistProvider = ({ children }) => {
         return stored ? JSON.parse(stored) : null;
     });
 
-    // Listen for authentication changes
+    // Poll localStorage every second to detect same-tab login/logout
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const stored = localStorage.getItem('user');
+            const parsed = stored ? JSON.parse(stored) : null;
+            setUser(prev => {
+                // Only update if user actually changed (by ID or null)
+                const prevId = prev?.id || null;
+                const nextId = parsed?.id || null;
+                if (prevId !== nextId) {
+                    return parsed;
+                }
+                return prev;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // Also listen for cross-tab changes
     useEffect(() => {
         const handleStorageChange = () => {
             const stored = localStorage.getItem('user');
             setUser(stored ? JSON.parse(stored) : null);
         };
-
         window.addEventListener('storage', handleStorageChange);
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    // Refresh user state from localStorage
-    const refreshUser = useCallback(() => {
-        const stored = localStorage.getItem('user');
-        const parsed = stored ? JSON.parse(stored) : null;
-        if (JSON.stringify(parsed) !== JSON.stringify(user)) {
-            setUser(parsed);
-        }
-        return parsed;
-    }, [user]);
-
-    const fetchWishlist = useCallback(async () => {
-        const currentUser = refreshUser();
+    const fetchWishlist = useCallback(async (currentUser) => {
         if (!currentUser || currentUser.role === 'admin') {
             setWishlist([]);
             return;
         }
-
         setLoading(true);
         try {
             const res = await client.get('wishlist/');
@@ -51,18 +55,22 @@ export const WishlistProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [refreshUser]);
+    }, []);
 
+    // Whenever user changes, clear wishlist and refetch for the new user
     useEffect(() => {
-        fetchWishlist();
-    }, [fetchWishlist]);
+        setWishlist([]); // always clear first
+        fetchWishlist(user);
+    }, [user, fetchWishlist]);
 
     const isInWishlist = useCallback((productId) => {
         return wishlist.some(item => item.product && item.product.id === productId);
     }, [wishlist]);
 
     const toggleWishlist = async (productId) => {
-        const currentUser = refreshUser();
+        const stored = localStorage.getItem('user');
+        const currentUser = stored ? JSON.parse(stored) : null;
+
         if (!currentUser) {
             toast.error('Please login to manage your wishlist');
             return false;
@@ -77,14 +85,13 @@ export const WishlistProvider = ({ children }) => {
 
         try {
             if (isCurrentlyIn) {
-                // Remove from wishlist
                 await client.delete(`wishlist/${productId}/`);
                 setWishlist(prev => prev.filter(item => item.product && item.product.id !== productId));
                 toast.success('Removed from wishlist');
             } else {
-                // Add to wishlist
-                const res = await client.post('wishlist/', { product_id: productId });
-                setWishlist(prev => [res.data, ...prev]);
+                await client.post('wishlist/', { product_id: productId });
+                // Refetch instead of optimistic update to ensure correct state
+                await fetchWishlist(currentUser);
                 toast.success('Added to wishlist');
             }
             return true;
@@ -96,7 +103,7 @@ export const WishlistProvider = ({ children }) => {
     };
 
     return (
-        <WishlistContext.Provider value={{ wishlist, loading, isInWishlist, toggleWishlist, fetchWishlist }}>
+        <WishlistContext.Provider value={{ wishlist, loading, isInWishlist, toggleWishlist, fetchWishlist: () => fetchWishlist(user) }}>
             {children}
         </WishlistContext.Provider>
     );
